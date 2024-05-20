@@ -1,0 +1,22 @@
+2024-05-20 09:29:51,133 INFO     Starting server at tcp:port=24008:interface=0.0.0.0
+2024-05-20 09:29:51,133 INFO     HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+2024-05-20 09:29:51,134 INFO     Configuring endpoint tcp:port=24008:interface=0.0.0.0
+2024-05-20 09:29:51,135 INFO     Listening on TCP address 0.0.0.0:24008
+Not Found: /static/admin/css/login.css
+2024-05-20 09:29:51,840 WARNING  Not Found: /static/admin/css/login.css
+Not Found: /static/admin/css/nav_sidebar.css
+2024-05-20 09:29:51,840 WARNING  Not Found: /static/admin/css/nav_sidebar.css
+Not Found: /static/admin/css/base.css
+2024-05-20 09:29:51,848 WARNING  Not Found: /static/admin/css/base.css
+Not Found: /static/admin/css/dark_mode.css
+2024-05-20 09:29:51,850 WARNING  Not Found: /static/admin/css/dark_mode.css
+Not Found: /static/admin/css/responsive.css
+2024-05-20 09:29:51,852 WARNING  Not Found: /static/admin/css/responsive.css
+Not Found: /static/admin/js/theme.js
+2024-05-20 09:29:51,853 WARNING  Not Found: /static/admin/js/theme.js
+Not Found: /static/admin/js/nav_sidebar.js
+2024-05-20 09:29:51,876 WARNING  Not Found: /static/admin/js/nav_sidebar.js
+Not Found: /favicon.ico
+2024-05-20 09:29:51,959 WARNING  Not Found: /favicon.ico
+Not Found: /boaform/admin/formLogin
+2024-05-20 09:47:06,467 WARNING  Not Found: /boaform/admin/formLogin
