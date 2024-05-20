@@ -109,7 +109,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             obj.count += 1
             await database_sync_to_async(obj.save)()
         if obj.count == 1:
-            if not mt5.initialize():
+            if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
                 print('why')
                 await self.send(text_data=json.dumps({'message': f"error"}))
                 # quit()
@@ -229,7 +229,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             obj.count += 1
             await database_sync_to_async(obj.save)()
         if obj.count == 1:
-            if not mt5.initialize():
+            if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
                 await self.send(text_data=json.dumps({'message': f"error"}))
                 # quit()
                 await self.close()
