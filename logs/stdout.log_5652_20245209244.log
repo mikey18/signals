@@ -1,6 +1,0 @@
-2024-05-20 10:24:13,338 INFO     Starting server at tcp:port=1899:interface=0.0.0.0
-2024-05-20 10:24:13,338 INFO     HTTP/2 support not enabled (install the http2 and tls Twisted extras)
-2024-05-20 10:24:13,338 INFO     Configuring endpoint tcp:port=1899:interface=0.0.0.0
-2024-05-20 10:24:13,338 INFO     Listening on TCP address 0.0.0.0:1899
-Not Found: /cgi-bin/luci/;stok=/locale
-2024-05-20 10:24:13,734 WARNING  Not Found: /cgi-bin/luci/;stok=/locale

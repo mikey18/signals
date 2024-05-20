@@ -108,12 +108,12 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             obj = await database_sync_to_async(Conncted_Clients.objects.first)()
             obj.count += 1
             await database_sync_to_async(obj.save)()
-        if obj.count == 1:
-            if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-                print('why')
-                await self.send(text_data=json.dumps({'message': f"error"}))
-                # quit()
-                await self.close()
+        # if obj.count == 1:
+        #     if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
+        #         print('why')
+        #         await self.send(text_data=json.dumps({'message': f"error"}))
+        #         # quit()
+        #         await self.close()
 
     async def disconnect_and_decrement_client(self):
         obj = await database_sync_to_async(Conncted_Clients.objects.first)()
@@ -124,7 +124,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
         elif obj.count == 1 and self.send_task:
             self.send_task.cancel()
-            mt5.shutdown()
+            # mt5.shutdown()
 
         obj.count -= 1
         await database_sync_to_async(obj.save)()
@@ -228,11 +228,11 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             obj = await database_sync_to_async(Conncted_Clients.objects.first)()
             obj.count += 1
             await database_sync_to_async(obj.save)()
-        if obj.count == 1:
-            if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-                await self.send(text_data=json.dumps({'message': f"error"}))
-                # quit()
-                await self.close()
+        # if obj.count == 1:
+        #     if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
+        #         await self.send(text_data=json.dumps({'message': f"error"}))
+        #         # quit()
+        #         await self.close()
 
 
     async def disconnect_and_decrement_client(self):
@@ -244,7 +244,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
 
         elif obj.count == 1 and self.send_task:
             self.send_task.cancel()
-            mt5.shutdown()
+            # mt5.shutdown()
 
         obj.count -= 1
         await database_sync_to_async(obj.save)()

@@ -1,5 +1,0 @@
-2024-05-20 09:25:27,967 INFO     Starting server at tcp:port=23149:interface=0.0.0.0
-2024-05-20 09:25:27,968 INFO     HTTP/2 support not enabled (install the http2 and tls Twisted extras)
-2024-05-20 09:25:27,968 INFO     Configuring endpoint tcp:port=23149:interface=0.0.0.0
-2024-05-20 09:25:27,970 INFO     Listening on TCP address 0.0.0.0:23149
-C:\inetpub\wwwroot\signal\signals_auth\serializers.py: Warning [LoginAPIView > LoginSerializer]: unable to resolve type hint for function "get_tokens". Consider using a type hint or @extend_schema_field. Defaulting to string.
