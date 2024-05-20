@@ -56,7 +56,10 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         # else:
         await self.send(text_data=json.dumps({'message': "started"}))
         while True:
-            await self.send(text_data=json.dumps({'message': "polling"}))
+            await self.send(text_data=json.dumps({
+                                                    'status': False,
+                                                    'message': "no signal yet"
+                                                }))
             print("Getting data in progress...")
             # Get the latest data
             bars = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
@@ -75,7 +78,9 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             # Check the conditions for the last bar
             print("Checking conditions in progress...\n")
             if (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
-                await self.send(text_data=json.dumps({'condition':'BUY',
+                await self.send(text_data=json.dumps({
+                                'status': True,
+                                'condition':'BUY',
                                 'RSI':rsi.rsi.iloc[-1],
                                 '14 SMA': ma14.ma.iloc[-1],
                                 'Current Price': current_price
@@ -87,7 +92,9 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 print("-" * 30)
             
             elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60):
-                await self.send(text_data=json.dumps({'condition':'SELL',
+                await self.send(text_data=json.dumps({
+                                            'status': True,
+                                            'condition':'SELL',
                                             'RSI':rsi.rsi.iloc[-1],
                                             '14 SMA': ma14.ma.iloc[-1],
                                             'Current Price': current_price
@@ -167,7 +174,10 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         try:
             await self.send(text_data=json.dumps({'message': "started"}))
             while True:
-                await self.send(text_data=json.dumps({'message': "polling"}))
+                await self.send(text_data=json.dumps({
+                                                        'status': False,
+                                                        'message': "no signal yet"
+                                                    }))
                 symbol = 'XAUUSD'  # or any other valid symbol
                 symbol_info = mt5.symbol_info(symbol)
                 print("Getting data in progress...")
@@ -192,7 +202,9 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     current_price = df['close'].iloc[-1]
                     stop_loss = current_price - 1000 * symbol_info.point
                     take_profit = current_price + 1500* symbol_info.point
-                    await self.send(text_data=json.dumps({'condition':'BUY',
+                    await self.send(text_data=json.dumps({
+                                                'status': True,
+                                                'condition':'BUY',
                                                 'RSI':rsi.rsi.iloc[-1],
                                                 'Current Price': current_price,
                                                 'SL': stop_loss,
@@ -209,7 +221,9 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     current_price = df['close'].iloc[-1]
                     stop_loss = current_price + 1500 * symbol_info.point
                     take_profit = current_price - 1000* symbol_info.point
-                    await self.send(text_data=json.dumps({'condition':'SELL',
+                    await self.send(text_data=json.dumps({
+                                                'status': True,
+                                                'condition':'SELL',
                                                 'RSI':rsi.rsi.iloc[-1],
                                                 'Current Price': current_price,
                                                 'SL': stop_loss,
