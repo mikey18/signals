@@ -110,6 +110,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             await database_sync_to_async(obj.save)()
         if obj.count == 1:
             if not mt5.initialize():
+                print('why')
                 await self.send(text_data=json.dumps({'message': f"error"}))
                 # quit()
                 await self.close()
