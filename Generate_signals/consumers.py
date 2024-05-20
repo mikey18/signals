@@ -12,7 +12,6 @@ from .models import Conncted_Clients
 from channels.db import database_sync_to_async
 
 
-
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # try:
@@ -31,7 +30,12 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             if client_data["msg"] == "ping" and self.task_running == False:
                 self.task_running = True
                 self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
-            else:
+
+            elif client_data["msg"] != "ping":
+                await self.send(text_data=json.dumps({'message': f"error"}))
+                await self.close()
+
+            elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'message': f"already pinged"}))
         except Exception:
             await self.close()
@@ -148,7 +152,12 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             if client_data["msg"] == "ping" and self.task_running == False:
                 self.task_running = True
                 self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
-            else:
+
+            elif client_data["msg"] != "ping":
+                await self.send(text_data=json.dumps({'message': f"error"}))
+                await self.close()
+
+            elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'message': f"already pinged"}))
         except Exception:
             await self.close()
