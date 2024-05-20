@@ -36,7 +36,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 await self.close()
 
             elif client_data["msg"] != "ping" and self.task_running:
-                await self.send(text_data=json.dumps({'message': f"already pinged"}))
+                await self.send(text_data=json.dumps({'status': False}))
         except Exception:
             await self.close()
 
@@ -54,7 +54,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         symbol = "XAUUSD"
      
         # else:
-        await self.send(text_data=json.dumps({'message': "started"}))
+        # await self.send(text_data=json.dumps({'message': "started"}))
         while True:
             await self.send(text_data=json.dumps({
                                                     'status': False,
@@ -165,14 +165,14 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 await self.close()
 
             elif client_data["msg"] != "ping" and self.task_running:
-                await self.send(text_data=json.dumps({'message': f"already pinged"}))
+                await self.send(text_data=json.dumps({'status': False}))
         except Exception:
             await self.close()
 
            
     async def get_buy_or_sell_signal(self):
         try:
-            await self.send(text_data=json.dumps({'message': "started"}))
+            # await self.send(text_data=json.dumps({'message': "started"}))
             while True:
                 await self.send(text_data=json.dumps({
                                                         'status': False,
