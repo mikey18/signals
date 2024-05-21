@@ -5,7 +5,6 @@ import MetaTrader5 as mt5
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import asyncio
-from .models import Conncted_Clients
 from channels.db import database_sync_to_async
 
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
