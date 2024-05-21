@@ -87,17 +87,17 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
 
     async def check_connected_clients_and_initiate(self):
-        clients = await database_sync_to_async(Conncted_Clients.objects.all)()
-        count = await database_sync_to_async(clients.count)()      
+    #     clients = await database_sync_to_async(Conncted_Clients.objects.all)()
+    #     count = await database_sync_to_async(clients.count)()      
         self.send_task = False
         self.task_running = False 
 
-        if count == 0:
-            obj = await database_sync_to_async(Conncted_Clients.objects.create)(count=1)
-        else:
-            obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-            obj.count += 1
-            await database_sync_to_async(obj.save)()
+    #     if count == 0:
+    #         obj = await database_sync_to_async(Conncted_Clients.objects.create)(count=1)
+    #     else:
+    #         obj = await database_sync_to_async(Conncted_Clients.objects.first)()
+    #         obj.count += 1
+    #         await database_sync_to_async(obj.save)()
         # if obj.count == 1:
         #     if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
         #         print('why')
@@ -106,24 +106,24 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         #         await self.close()
 
     async def disconnect_and_decrement_client(self):
-        obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-        print(f'socket closed {obj.count}')
+        # obj = await database_sync_to_async(Conncted_Clients.objects.first)()
+        # print(f'socket closed {obj.count}')
 
-        if obj.count > 1 and self.send_task:
-            self.send_task.cancel()
+        # if obj.count > 1 and self.send_task:
+        self.send_task.cancel()
 
-        elif obj.count == 1 and self.send_task:
-            self.send_task.cancel()
+        # elif obj.count == 1 and self.send_task:
+        #     self.send_task.cancel()
             # mt5.shutdown()
 
-        obj.count -= 1
-        await database_sync_to_async(obj.save)()
+        # obj.count -= 1
+        # await database_sync_to_async(obj.save)()
 
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # try:
         await self.accept()
-        await self.check_connected_clients_and_initiate()
+        # await self.check_connected_clients_and_initiate()
         # except Exception as e:
         #     print(e)
 
@@ -216,17 +216,17 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             await self.close()
  
     async def check_connected_clients_and_initiate(self):
-        clients = await database_sync_to_async(Conncted_Clients.objects.all)()
-        count = await database_sync_to_async(clients.count)()      
+        # clients = await database_sync_to_async(Conncted_Clients.objects.all)()
+        # count = await database_sync_to_async(clients.count)()      
         self.send_task = False
         self.task_running = False 
 
-        if count == 0:
-            obj = await database_sync_to_async(Conncted_Clients.objects.create)(count=1)
-        else:
-            obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-            obj.count += 1
-            await database_sync_to_async(obj.save)()
+        # if count == 0:
+        #     obj = await database_sync_to_async(Conncted_Clients.objects.create)(count=1)
+        # else:
+        #     obj = await database_sync_to_async(Conncted_Clients.objects.first)()
+        #     obj.count += 1
+        #     await database_sync_to_async(obj.save)()
         # if obj.count == 1:
         #     if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
         #         await self.send(text_data=json.dumps({'message': f"error"}))
@@ -234,15 +234,15 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         #         await self.close()
 
     async def disconnect_and_decrement_client(self):
-        obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-        print(f'socket closed {obj.count}')
+        # obj = await database_sync_to_async(Conncted_Clients.objects.first)()
+        # print(f'socket closed {obj.count}')
 
-        if obj.count > 1 and self.send_task:
-            self.send_task.cancel()
+        # if obj.count > 1 and self.send_task:
+        #     self.send_task.cancel()
 
-        elif obj.count == 1 and self.send_task:
-            self.send_task.cancel()
+        # elif obj.count == 1 and self.send_task:
+        self.send_task.cancel()
             # mt5.shutdown()
 
-        obj.count -= 1
-        await database_sync_to_async(obj.save)()
+        # obj.count -= 1
+        # await database_sync_to_async(obj.save)()
