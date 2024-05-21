@@ -1,25 +1,18 @@
 import pandas as pd
 import vectorbt as vbt
-# import pandas_ta as ta
 import datetime
-# import time
 import MetaTrader5 as mt5
-#from mt5linux import MetaTrader5
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import asyncio
 from .models import Conncted_Clients
 from channels.db import database_sync_to_async
-# import redis.asyncio as redis
 
 
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # try:
         await self.accept()
         await self.check_connected_clients_and_initiate()
-        # except Exception as e:
-        #     print(e)
 
     async def disconnect(self, message):
         await self.disconnect_and_decrement_client()
@@ -41,21 +34,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         except Exception:
             await self.close()
 
-        # loop = asyncio.get_event_loop()
-
-        # try:
-        #     asyncio.ensure_future(self.get_buy_or_sell_signal())
-        #     loop.run_forever()
-        # except Exception:
-        #     pass
-        # finally:
-        #     print("loop is closed")
-
     async def get_buy_or_sell_signal(self):
         symbol = "XAUUSD"
-     
-        # else:
-        # await self.send(text_data=json.dumps({'message': "started"}))
         while True:
             await self.send(text_data=json.dumps({
                                                     'status': False,
@@ -141,168 +121,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         obj.count -= 1
         await database_sync_to_async(obj.save)()
 
-
-# class PremiumCheckConsumer(AsyncWebsocketConsumer):
-#     async def connect(self):
-#         # try:
-#         await self.accept()
-#         await self.channel_layer.group_add(
-#             'mmm',
-#             self.channel_name
-#         )
-#         self.redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
-
-#         # except Exception as e:
-#         #     print(e)
-
-#     async def disconnect(self, message):
-#         await self.disconnect_and_decrement_client()
-#         await self.close()
-
-#     async def receive(self, text_data):
-#         try:
-#             self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
-#         except Exception:
-#             await self.close()
-
-#         try:
-#             client_data = json.loads(text_data)
-#             if client_data["msg"] == "ping" and await self.get_room_count() == 0:
-#                 self.task_running = True
-#                 self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
-
-#                 # Increment the connection count in Redis
-#                 self.redis_client.incr('mmm' + '_count')
-
-#             elif client_data["msg"] != "ping":
-#                 await self.send(text_data=json.dumps({'message': f"error"}))
-#                 await self.close()
-
-#             elif client_data["msg"] == "ping" and await self.get_room_count() > 0:
-#                 await self.send(text_data=json.dumps({'status': 'hold on'}))
-#         except Exception:
-#             await self.close()
-
-#         # loop = asyncio.get_event_loop()
-
-#         # try:
-#         #     asyncio.ensure_future(self.get_buy_or_sell_signal())
-#         #     loop.run_forever()
-#         # except Exception:
-#         #     pass
-#         # finally:
-#         #     print("loop is closed")
-
-#     async def get_buy_or_sell_signal(self):
-#         symbol = "XAUUSD"
-     
-#         # else:
-#         # await self.send(text_data=json.dumps({'message': "started"}))
-#         while True:   
-#             await self.channel_layer.group_send(
-#                     'mmm',
-#                     {
-#                         'type': 'no.group',
-#                        'status': False,
-#                         'message': "loading"
-#                     }
-#             )  
-#             print("Getting data in progress...")
-#             # Get the latest data
-#             bars = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
-#             df = pd.DataFrame(bars)
-#             df['time'] = pd.to_datetime(df['time'], unit='s')
-#             df = df.set_index('time')
-#             current_price = df['close'].iloc[-1]
-
-#             # Calculate indicators
-#             print("Calculating indicators in progress...")
-#             ma14 = vbt.MA.run(df['close'], 14)
-#             ma50 = vbt.MA.run(df['close'], 50)
-#             ma365 = vbt.MA.run(df['close'], 365)
-#             rsi = vbt.RSI.run(df['close'], 14)
-            
-#             # Check the conditions for the last bar
-#             print("Checking conditions in progress...\n")
-#             if (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40): 
-#                 await self.channel_layer.group_send(
-#                     'mmm',
-#                     {
-#                         'type': 'send.group',
-#                         'status': True,
-#                         'condition':'BUY',
-#                         'RSI':rsi.rsi.iloc[-1],
-#                         '14 SMA': ma14.ma.iloc[-1],
-#                         'Current Price': current_price
-#                     }
-#                 )  
-#                 print("Buy condition met:")
-#                 print(f"RSI: {rsi.rsi.iloc[-1]:.2f} (below 40)")
-#                 print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (above 50 SMA and 50 SMA > 365 SMA)")
-#                 print(f"Current price: {current_price:.5f}")
-#                 print("-" * 30)
-            
-#             elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60):
-#                 await self.channel_layer.group_send(
-#                     'mmm',
-#                     {
-#                         'type': 'send.group',
-#                         'status': True,
-#                         'condition':'SELL',
-#                         'RSI':rsi.rsi.iloc[-1],
-#                         '14 SMA': ma14.ma.iloc[-1],
-#                         'Current Price': current_price
-#                     }
-#                 )  
-#                 print("Sell condition met:")
-#                 print(f"RSI: {rsi.rsi.iloc[-1]:.2f} (above 60)")
-#                 print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (below 50 SMA and 50 SMA < 365 SMA)")
-#                 print(f"Current price: {current_price:.5f}")
-#                 print("-" * 30)
-#             await asyncio.sleep(5)  # wait for 60 seconds      
-        
-       
-
-#     async def disconnect_and_decrement_client(self):
-#         if await self.get_room_count() == 1:
-#             print(self.get_room_count())
-#             self.send_task.cancel()
-
-#         self.redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
-#         self.redis_client.decr('mmm' + '_count')
-
-#         await self.channel_layer.group_discard(
-#             'mmm',
-#             self.channel_name
-#         )
-
-
-#     async def send_group(self, event):
-#         # Send message through WebSocket
-#         await self.send(text_data=json.dumps({
-#             'status': event['status'],
-#             'condition':event['condition'],
-#             'RSI': event['RSI'],
-#             '14 SMA': event['14 SMA'],
-#             'Current Price': event['Current Price']
-#         }))
-
-#     async def no_group(self, event):
-#         # Send message through WebSocket
-#         await self.send(text_data=json.dumps({
-#             'status': event['status'],
-#             'message': event['message']
-#         }))
-
-#     async def get_room_count(self):
-#         count = await self.redis_client.get('mmm' + '_count')
-#         print(count)
-
-#         if count is None:
-#             return 0
-#         return int(count)
-
-
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # try:
@@ -331,10 +149,8 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         except Exception:
             await self.close()
 
-           
     async def get_buy_or_sell_signal(self):
         try:
-            # await self.send(text_data=json.dumps({'message': "started"}))
             while True:
                 await self.send(text_data=json.dumps({
                                                         'status': False,
@@ -418,7 +234,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         #         await self.send(text_data=json.dumps({'message': f"error"}))
         #         # quit()
         #         await self.close()
-
 
     async def disconnect_and_decrement_client(self):
         obj = await database_sync_to_async(Conncted_Clients.objects.first)()
