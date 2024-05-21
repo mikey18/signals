@@ -15,14 +15,11 @@ import os
 from datetime import timedelta
 from decouple import config
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
 
 # SECRET_KEY = config("DJANGO_SECRET_KEY", default='ghi4557764dfhhrsf533vf346uvdr66$#')
 
@@ -33,9 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'daphne',
     'channels',
@@ -56,8 +51,6 @@ INSTALLED_APPS = [
     # drf api documentation
     'drf_spectacular_sidecar',
     'django_filters',
-    
-    
 ]
 
 MIDDLEWARE = [
@@ -89,17 +82,6 @@ TEMPLATES = [
     },
 ]
 
-
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             'hosts': [('localhost', 6379)],  # Replace with your Redis host and port
-#             'capacity': 1500,  # Optional (default = 100)
-#             'expiry': 10 # Optional (default = 60)
-#         },
-#     },
-# }
 # CHANNEL_LAYERS = {
 #     'default': {
 #         'BACKEND': 'channels.layers.InMemoryChannelLayer',
@@ -215,7 +197,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
 
 # Media cofiguration
-
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
