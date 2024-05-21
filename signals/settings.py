@@ -21,10 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-SECRET_KEY = config("DJANGO_SECRET_KEY", default='ghi4557764dfhhrsf533vf346uvdr66$#')
+# SECRET_KEY = config("DJANGO_SECRET_KEY", default='ghi4557764dfhhrsf533vf346uvdr66$#')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = config("DEBUG", default=True, cast=bool)
+SECRET_KEY = 'ghi4557764dfhhrsf533vf346uvdr66$#'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -155,9 +156,6 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST':True,
     'ASGI_APPLICATION': "signals.asgi.application"
 }
-
-WSGI_APPLICATION = 'signals.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
