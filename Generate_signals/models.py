@@ -1,16 +1,13 @@
 from django.db import models
 from django.utils import timezone
-from signals_auth.models import CustomUser
 from signals_auth.utils import generate_id
-from django.contrib.auth.models import AbstractUser
-from rest_framework_simplejwt.tokens import RefreshToken
 
 
 def today():
     return timezone.now().date()
 
 class Room(models.Model):
-    room_id = models.CharField(primary_key=True, default=generate_id, max_length=64)
+    id  = models.CharField(primary_key=True, default=generate_id, max_length=64)
     name = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
     price = models.IntegerField(blank=False, null=False)
@@ -25,10 +22,10 @@ class Room(models.Model):
     updated_date = models.DateTimeField('date_created' ,auto_now=True)
 
 
-    def save(self, *args, **kwargs):
-        print(self.end_date)
-        self.available_date = self.end_date  + timezone.timedelta(days=1)
-        super(Room, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     print(self.end_date)
+    #     self.available_date = self.end_date  + timezone.timedelta(days=1)
+    #     super(Room, self).save(*args, **kwargs)
 
 
     def __str__(self):
@@ -39,6 +36,7 @@ class Room(models.Model):
 
 
 class RoomImages(models.Model):
+    id  = models.CharField(primary_key=True, default=generate_id, max_length=64)
     room = models.ForeignKey(Room, related_name="images", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="media/")
     date_created = models.DateTimeField(default=timezone.now)

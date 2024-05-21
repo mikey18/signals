@@ -20,11 +20,11 @@ from django.core.asgi import get_asgi_application
 from Generate_signals.routing import url_pattern
 
 
-application = ProtocolTypeRouter(
-    {
-        "http": get_asgi_application(),
-        "websocket": AuthMiddlewareStack(
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AllowedHostsOriginValidator(
+        AuthMiddlewareStack(
             URLRouter(url_pattern)
-        ),
-    }
-)
+        )
+    ),
+})

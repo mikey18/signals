@@ -5,15 +5,16 @@ import MetaTrader5 as mt5
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import asyncio
-from channels.db import database_sync_to_async
 
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        await self.check_connected_clients_and_initiate()
+        self.send_task = False
+        self.task_running = False
 
     async def disconnect(self, message):
-        await self.disconnect_and_decrement_client()
+        if self.send_task:
+            self.send_task.cancel()
         await self.close()
 
     async def receive(self, text_data):
@@ -29,19 +30,20 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
+
+            self.symbol = 'XAUUSD'
         except Exception:
             await self.close()
 
     async def get_buy_or_sell_signal(self):
-        symbol = "XAUUSD"
         while True:
             await self.send(text_data=json.dumps({
-                                                    'status': False,
-                                                    'message': "no signal yet"
-                                                }))
+                                        'status': False,
+                                        'message': "polling"
+                                    }))
             print("Getting data in progress...")
             # Get the latest data
-            bars = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
+            bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
             df = pd.DataFrame(bars)
             df['time'] = pd.to_datetime(df['time'], unit='s')
             df = df.set_index('time')
@@ -85,50 +87,15 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 print("-" * 30)
             await asyncio.sleep(60)  # wait for 60 seconds
 
-
-    async def check_connected_clients_and_initiate(self):
-    #     clients = await database_sync_to_async(Conncted_Clients.objects.all)()
-    #     count = await database_sync_to_async(clients.count)()      
-        self.send_task = False
-        self.task_running = False 
-
-    #     if count == 0:
-    #         obj = await database_sync_to_async(Conncted_Clients.objects.create)(count=1)
-    #     else:
-    #         obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-    #         obj.count += 1
-    #         await database_sync_to_async(obj.save)()
-        # if obj.count == 1:
-        #     if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-        #         print('why')
-        #         await self.send(text_data=json.dumps({'message': f"error"}))
-        #         # quit()
-        #         await self.close()
-
-    async def disconnect_and_decrement_client(self):
-        # obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-        # print(f'socket closed {obj.count}')
-
-        # if obj.count > 1 and self.send_task:
-        self.send_task.cancel()
-
-        # elif obj.count == 1 and self.send_task:
-        #     self.send_task.cancel()
-            # mt5.shutdown()
-
-        # obj.count -= 1
-        # await database_sync_to_async(obj.save)()
-
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # try:
         await self.accept()
-        # await self.check_connected_clients_and_initiate()
-        # except Exception as e:
-        #     print(e)
+        self.send_task = False
+        self.task_running = False
 
     async def disconnect(self, message):
-        await self.disconnect_and_decrement_client()
+        if self.send_task:
+            self.send_task.cancel()
         await self.close()
 
     async def receive(self, text_data):
@@ -144,6 +111,8 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
 
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
+
+            self.symbol = 'XAUUSD'  # or any other valid symbol
         except Exception:
             await self.close()
 
@@ -152,13 +121,12 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             while True:
                 await self.send(text_data=json.dumps({
                                                         'status': False,
-                                                        'message': "no signal yet"
+                                                        'message': "polling"
                                                     }))
-                symbol = 'XAUUSD'  # or any other valid symbol
-                symbol_info = mt5.symbol_info(symbol)
+                symbol_info = mt5.symbol_info(self.symbol)
                 print("Getting data in progress...")
                 # Get the latest data
-                bars = mt5.copy_rates_from(symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
+                bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
                 df['time'] = pd.to_datetime(df['time'], unit='s')
                 df = df.set_index('time')
@@ -215,34 +183,4 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         except Exception:
             await self.close()
  
-    async def check_connected_clients_and_initiate(self):
-        # clients = await database_sync_to_async(Conncted_Clients.objects.all)()
-        # count = await database_sync_to_async(clients.count)()      
-        self.send_task = False
-        self.task_running = False 
 
-        # if count == 0:
-        #     obj = await database_sync_to_async(Conncted_Clients.objects.create)(count=1)
-        # else:
-        #     obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-        #     obj.count += 1
-        #     await database_sync_to_async(obj.save)()
-        # if obj.count == 1:
-        #     if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-        #         await self.send(text_data=json.dumps({'message': f"error"}))
-        #         # quit()
-        #         await self.close()
-
-    async def disconnect_and_decrement_client(self):
-        # obj = await database_sync_to_async(Conncted_Clients.objects.first)()
-        # print(f'socket closed {obj.count}')
-
-        # if obj.count > 1 and self.send_task:
-        #     self.send_task.cancel()
-
-        # elif obj.count == 1 and self.send_task:
-        self.send_task.cancel()
-            # mt5.shutdown()
-
-        # obj.count -= 1
-        # await database_sync_to_async(obj.save)()

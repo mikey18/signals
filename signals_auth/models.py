@@ -1,32 +1,22 @@
 from django.db import models
-from django.utils import timezone
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
-from .utils import generate_id
 from .managers import CustomUserManager
-from rest_framework_simplejwt.tokens import RefreshToken
+from .utils import generate_id
 
-
-
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    id = models.CharField(primary_key=True, default=generate_id(), max_length=64)
-    email = models.EmailField(_("email address"), unique=True, db_index=True)
+class User(AbstractUser):
+    id  = models.CharField(primary_key=True, default=generate_id, max_length=64)
+    email = models.EmailField(_("email address"), unique=True)
     fullname = models.CharField(max_length=150)
-    is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
-    date_created = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    username = None
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['fullname']
 
     objects = CustomUserManager()
 
     def __str__(self):
         return self.email
-    
-    def tokens(self):
-        refresh = RefreshToken.for_user(self)
-        return{
-            'refresh':str(refresh),
-            'access':str(refresh.access_token)
-        }
