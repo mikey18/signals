@@ -20,18 +20,17 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             client_data = json.loads(text_data)
+            self.symbol = 'XAUUSD'
             if client_data["msg"] == "ping" and self.task_running == False:
                 self.task_running = True
                 self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
 
-            elif client_data["msg"] != "ping":
-                await self.send(text_data=json.dumps({'message': f"error"}))
-                await self.close()
-
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
 
-            self.symbol = 'XAUUSD'
+            elif client_data["msg"] != "ping":
+                await self.send(text_data=json.dumps({'message': f"error"}))
+                await self.close()
         except Exception:
             await self.close()
 
@@ -111,18 +110,17 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             client_data = json.loads(text_data)
+            self.symbol = 'XAUUSD'  # or any other valid symbol
             if client_data["msg"] == "ping" and self.task_running == False:
                 self.task_running = True
                 self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
 
-            elif client_data["msg"] != "ping":
-                await self.send(text_data=json.dumps({'message': f"error"}))
-                await self.close()
-
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
 
-            self.symbol = 'XAUUSD'  # or any other valid symbol
+            elif client_data["msg"] != "ping":
+                await self.send(text_data=json.dumps({'message': f"error"}))
+                await self.close()
         except Exception:
             await self.close()
 
