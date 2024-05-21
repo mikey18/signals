@@ -30,12 +30,14 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
+
+            self.symbol = 'XAUUSD'
         except Exception:
             await self.close()
 
     async def get_buy_or_sell_signal(self):
         while True:
-            self.symbol = 'XAUUSD'  # or any other valid symbol
+           
             print("Getting data in progress...")
             # Get the latest data
             bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
@@ -120,13 +122,13 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
 
+            self.symbol = 'XAUUSD'  # or any other valid symbol
         except Exception:
             await self.close()
 
     async def get_buy_or_sell_signal(self):
         try:
             while True:
-                self.symbol = 'XAUUSD'  # or any other valid symbol
                 symbol_info = mt5.symbol_info(self.symbol)
                 print("Getting data in progress...")
                 # Get the latest data
