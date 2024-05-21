@@ -1,10 +1,7 @@
 import pandas as pd
 import vectorbt as vbt
-# import pandas_ta as ta
 import datetime
-# import time
 import MetaTrader5 as mt5
-#from mt5linux import MetaTrader5
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import asyncio
@@ -14,11 +11,8 @@ from channels.db import database_sync_to_async
 
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # try:
         await self.accept()
         await self.check_connected_clients_and_initiate()
-        # except Exception as e:
-        #     print(e)
 
     async def disconnect(self, message):
         await self.disconnect_and_decrement_client()
@@ -40,21 +34,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         except Exception:
             await self.close()
 
-        # loop = asyncio.get_event_loop()
-
-        # try:
-        #     asyncio.ensure_future(self.get_buy_or_sell_signal())
-        #     loop.run_forever()
-        # except Exception:
-        #     pass
-        # finally:
-        #     print("loop is closed")
-
     async def get_buy_or_sell_signal(self):
         symbol = "XAUUSD"
-     
-        # else:
-        # await self.send(text_data=json.dumps({'message': "started"}))
         while True:
             await self.send(text_data=json.dumps({
                                                     'status': False,
@@ -152,7 +133,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         await self.disconnect_and_decrement_client()
         await self.close()
 
-
     async def receive(self, text_data):
         try:
             client_data = json.loads(text_data)
@@ -169,10 +149,8 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         except Exception:
             await self.close()
 
-           
     async def get_buy_or_sell_signal(self):
         try:
-            # await self.send(text_data=json.dumps({'message': "started"}))
             while True:
                 await self.send(text_data=json.dumps({
                                                         'status': False,
@@ -256,7 +234,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
         #         await self.send(text_data=json.dumps({'message': f"error"}))
         #         # quit()
         #         await self.close()
-
 
     async def disconnect_and_decrement_client(self):
         obj = await database_sync_to_async(Conncted_Clients.objects.first)()

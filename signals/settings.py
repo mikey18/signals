@@ -91,11 +91,22 @@ TEMPLATES = [
     },
 ]
 
+
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('localhost', 6379)],  # Replace with your Redis host and port
+            'capacity': 1500,  # Optional (default = 100)
+            'expiry': 10 # Optional (default = 60)
+        },
     },
 }
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#     },
+# }
 
 ASGI_APPLICATION = "signals.asgi.application"
 
