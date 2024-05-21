@@ -15,14 +15,11 @@ import os
 from datetime import timedelta
 from decouple import config
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
 
 SECRET_KEY = config("DJANGO_SECRET_KEY", default='ghi4557764dfhhrsf533vf346uvdr66$#')
 
@@ -32,9 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'daphne',
     'channels',
@@ -44,22 +39,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-        # apps
-
+    # apps
     'Generate_signals.apps.GenerateSignalsConfig',
     'signals_auth.apps.SignalsAuthConfig',
-
-
     # third-party apps
-
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'drf_spectacular', # drf api documentation
+    'drf_spectacular', 
+    # drf api documentation
     'drf_spectacular_sidecar',
     'django_filters',
-    
-    
 ]
 
 MIDDLEWARE = [
@@ -220,7 +210,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
 
 # Media cofiguration
-
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
