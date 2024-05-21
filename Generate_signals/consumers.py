@@ -37,10 +37,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
     async def get_buy_or_sell_signal(self):
         while True:
-            await self.send(text_data=json.dumps({
-                                        'status': False,
-                                        'message': "polling"
-                                    }))
+           
             print("Getting data in progress...")
             # Get the latest data
             bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
@@ -58,6 +55,19 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             
             # Check the conditions for the last bar
             print("Checking conditions in progress...\n")
+            await self.send(text_data=json.dumps({
+                'status': False,
+                'message': "polling"
+            }))
+
+            if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
+            and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60)):
+                await self.send(text_data=json.dumps({
+                    'status': False,
+                    'message': "polling"
+                }))
+
+
             if (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
                 await self.send(text_data=json.dumps({
                                 'status': True,
@@ -85,7 +95,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (below 50 SMA and 50 SMA < 365 SMA)")
                 print(f"Current price: {current_price:.5f}")
                 print("-" * 30)
-            await asyncio.sleep(60)  # wait for 60 seconds
+            await asyncio.sleep(2)  # wait for 60 seconds
 
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -119,10 +129,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def get_buy_or_sell_signal(self):
         try:
             while True:
-                await self.send(text_data=json.dumps({
-                                                        'status': False,
-                                                        'message': "polling"
-                                                    }))
                 symbol_info = mt5.symbol_info(self.symbol)
                 print("Getting data in progress...")
                 # Get the latest data
@@ -141,6 +147,12 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 sell_condition = rsi.rsi < 22
 
                 
+                if not buy_condition.iloc[-1] and not sell_condition.iloc[-1]:
+                    await self.send(text_data=json.dumps({
+                        'status': False,
+                        'message': "polling"
+                    }))
+
                 if buy_condition.iloc[-1]:
                     print("Buy condition met:")
                     current_price = df['close'].iloc[-1]
@@ -179,7 +191,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     print(f"Stop loss: {stop_loss:.5f}")
                     print(f"Take profit: {take_profit:.5f}")
                     print("-" * 30)
-                await asyncio.sleep(60)  # wait for 60 seconds
+                await asyncio.sleep(2)  # wait for 60 seconds
         except Exception:
             await self.close()
  
