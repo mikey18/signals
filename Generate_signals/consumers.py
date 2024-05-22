@@ -11,6 +11,15 @@ logger = logging.getLogger(__name__)
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
+        if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
+            print("MT5 initialization failed")
+            await self.send(text_data=json.dumps({
+                'message': "failed to load mt5"
+            }))
+        
+        await self.send(text_data=json.dumps({
+            'message': "started"
+        }))
         self.send_task = False
         self.task_running = False
 
@@ -37,59 +46,67 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             await self.close()
 
     async def get_buy_or_sell_signal(self):
-        while True:
-            print("Getting data in progress...")
-            # Get the latest data
-            bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
-            df = pd.DataFrame(bars)
-            df['time'] = pd.to_datetime(df['time'], unit='s')
-            df = df.set_index('time')
-            current_price = df['close'].iloc[-1]
+        try:
+            while True:
+                print("Getting data in progress...")
+                # Get the latest data
+                bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
+                df = pd.DataFrame(bars)
+                df['time'] = pd.to_datetime(df['time'], unit='s')
+                df = df.set_index('time')
+                current_price = df['close'].iloc[-1]
 
-            # Calculate indicators
-            print("Calculating indicators in progress...")
-            ma14 = vbt.MA.run(df['close'], 14)
-            ma50 = vbt.MA.run(df['close'], 50)
-            ma365 = vbt.MA.run(df['close'], 365)
-            rsi = vbt.RSI.run(df['close'], 14)
-            
-            # Check the conditions for the last bar
-            print("Checking conditions in progress...\n")
-            if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
-            and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60)):
-                await self.send(text_data=json.dumps({
-                    'status': False,
-                    'message': "polling"
-                }))
+                # Calculate indicators
+                print("Calculating indicators in progress...")
+                ma14 = vbt.MA.run(df['close'], 14)
+                ma50 = vbt.MA.run(df['close'], 50)
+                ma365 = vbt.MA.run(df['close'], 365)
+                rsi = vbt.RSI.run(df['close'], 14)
+                
+                # Check the conditions for the last bar
+                print("Checking conditions in progress...\n")
+                if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
+                and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60)):
+                    await self.send(text_data=json.dumps({
+                        'status': False,
+                        'message': "polling"
+                    }))
 
-            if (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
-                await self.send(text_data=json.dumps({
-                                'status': True,
-                                'condition':'BUY',
-                                'RSI':rsi.rsi.iloc[-1],
-                                '14 SMA': ma14.ma.iloc[-1],
-                                'Current Price': current_price
-                                }))
-                print("Buy condition met:")
-                print(f"RSI: {rsi.rsi.iloc[-1]:.2f} (below 40)")
-                print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (above 50 SMA and 50 SMA > 365 SMA)")
-                print(f"Current price: {current_price:.5f}")
-                print("-" * 30)
-            
-            elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60):
-                await self.send(text_data=json.dumps({
-                                            'status': True,
-                                            'condition':'SELL',
-                                            'RSI':rsi.rsi.iloc[-1],
-                                            '14 SMA': ma14.ma.iloc[-1],
-                                            'Current Price': current_price
-                                            }))
-                print("Sell condition met:")
-                print(f"RSI: {rsi.rsi.iloc[-1]:.2f} (above 60)")
-                print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (below 50 SMA and 50 SMA < 365 SMA)")
-                print(f"Current price: {current_price:.5f}")
-                print("-" * 30)
-            await asyncio.sleep(2)  # wait for 60 seconds
+                if (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
+                    await self.send(text_data=json.dumps({
+                                    'status': True,
+                                    'condition':'BUY',
+                                    'RSI':rsi.rsi.iloc[-1],
+                                    '14 SMA': ma14.ma.iloc[-1],
+                                    'Current Price': current_price
+                                    }))
+                    print("Buy condition met:")
+                    print(f"RSI: {rsi.rsi.iloc[-1]:.2f} (below 40)")
+                    print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (above 50 SMA and 50 SMA > 365 SMA)")
+                    print(f"Current price: {current_price:.5f}")
+                    print("-" * 30)
+                
+                elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60):
+                    await self.send(text_data=json.dumps({
+                                                'status': True,
+                                                'condition':'SELL',
+                                                'RSI':rsi.rsi.iloc[-1],
+                                                '14 SMA': ma14.ma.iloc[-1],
+                                                'Current Price': current_price
+                                                }))
+                    print("Sell condition met:")
+                    print(f"RSI: {rsi.rsi.iloc[-1]:.2f} (above 60)")
+                    print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (below 50 SMA and 50 SMA < 365 SMA)")
+                    print(f"Current price: {current_price:.5f}")
+                    print("-" * 30)
+                await asyncio.sleep(2)  # wait for 60 seconds
+        except Exception as e:
+            logger.error(f"Error in WebSocket task: {e}")
+            # await self.send(text_data=json.dumps({
+            #     'message': 'fail',
+            #     'error': error_message
+            # }))
+            await self.close()
 
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
