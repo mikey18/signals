@@ -54,11 +54,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             
             # Check the conditions for the last bar
             print("Checking conditions in progress...\n")
-            await self.send(text_data=json.dumps({
-                'status': False,
-                'message': "polling"
-            }))
-
             if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
             and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60)):
                 await self.send(text_data=json.dumps({
@@ -113,7 +108,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             self.symbol = 'XAUUSD'  # or any other valid symbol
             if client_data["msg"] == "ping" and self.task_running == False:
                 self.task_running = True
-                self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
+                self.send_task = self.get_buy_or_sell_signal()
 
             elif client_data["msg"] != "ping" and self.task_running:
                 await self.send(text_data=json.dumps({'status': False}))
@@ -126,7 +121,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
 
     async def get_buy_or_sell_signal(self):
         try:
-            while True:
+            # while True:
                 symbol_info = mt5.symbol_info(self.symbol)
                 print("Getting data in progress...")
                 # Get the latest data
@@ -189,7 +184,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     print(f"Stop loss: {stop_loss:.5f}")
                     print(f"Take profit: {take_profit:.5f}")
                     print("-" * 30)
-                await asyncio.sleep(2)  # wait for 60 seconds
+                # await asyncio.sleep(2)  # wait for 60 seconds
         except Exception:
             await self.close()
  
