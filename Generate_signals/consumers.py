@@ -92,15 +92,15 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-
-        await self.send(text_data=json.dumps({
-                        'message': "starting"
-                    }))
         if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
             print("MT5 initialization failed")
             await self.send(text_data=json.dumps({
-                'message': "failed"
+                'message': "failed to load mt5"
             }))
+        
+        await self.send(text_data=json.dumps({
+            'message': "started"
+        }))
         self.send_task = False
         self.task_running = False
 
@@ -188,9 +188,9 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     print("-" * 30)
                 await asyncio.sleep(2)  # wait for 60 seconds
        
-        except Exception as e:
+        except Exception:
             await self.send(text_data=json.dumps({
-                'message': e
+                'message': 'fail'
             }))
             await self.close()
  
