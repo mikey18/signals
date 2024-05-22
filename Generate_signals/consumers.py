@@ -91,6 +91,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        await self.accept()
+
         await self.send(text_data=json.dumps({
                         'message': "starting"
                     }))
@@ -99,7 +101,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'message': "failed"
             }))
-        await self.accept()
         self.send_task = False
         self.task_running = False
 
