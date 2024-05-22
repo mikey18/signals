@@ -54,11 +54,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             
             # Check the conditions for the last bar
             print("Checking conditions in progress...\n")
-            await self.send(text_data=json.dumps({
-                'status': False,
-                'message': "polling"
-            }))
-
             if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
             and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 60)):
                 await self.send(text_data=json.dumps({
