@@ -53,10 +53,14 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
 
-                logger.info('WORKING')
+                logger.info('trying 1')
+                await self.send(text_data=json.dumps({
+                    'df': df
+                }))
 
                 df['time'] = pd.to_datetime(df['time'], unit='s')
-                logger.info('YESS')
+
+                logger.info('trying 2')
 
                 df = df.set_index('time')
                 current_price = df['close'].iloc[-1]
