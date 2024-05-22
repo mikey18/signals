@@ -5,6 +5,8 @@ import MetaTrader5 as mt5
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import asyncio
+import logging
+logger = logging.getLogger(__name__)
 
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -189,9 +191,11 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(2)  # wait for 60 seconds
        
         except Exception as e:
-            print(e)
+            error_message = str(e)
+            logger.error(f"Error in WebSocket task: {error_message}")
             await self.send(text_data=json.dumps({
-                'message': 'fail'
+                'message': 'fail',
+                'error': error_message
             }))
             await self.close()
  
