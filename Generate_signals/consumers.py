@@ -136,6 +136,9 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 # Get the latest data
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
+
+                logger.info(self.symbol)
+
                 df['time'] = pd.to_datetime(df['time'], unit='s')
                 df = df.set_index('time')
                 # Calculate RSI
