@@ -54,7 +54,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 df = pd.DataFrame(bars)
 
                 logger.info('trying 1')
-                logger.info(df)
+                logger.info(bars)
         
                 df['time'] = pd.to_datetime(df['time'], unit='s')
 
