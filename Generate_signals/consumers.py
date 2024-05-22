@@ -54,10 +54,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 df = pd.DataFrame(bars)
 
                 logger.info('trying 1')
-                await self.send(text_data=json.dumps({
-                    'df': df
-                }))
-
+                logger.info(df)
+        
                 df['time'] = pd.to_datetime(df['time'], unit='s')
 
                 logger.info('trying 2')
