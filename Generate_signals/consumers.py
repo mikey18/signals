@@ -91,8 +91,14 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        await self.send(text_data=json.dumps({
+                        'message': "starting"
+                    }))
         if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
             print("MT5 initialization failed")
+            await self.send(text_data=json.dumps({
+                'message': "failed"
+            }))
         await self.accept()
         self.send_task = False
         self.task_running = False
