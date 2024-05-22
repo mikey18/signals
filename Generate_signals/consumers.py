@@ -36,7 +36,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
     async def get_buy_or_sell_signal(self):
         while True:
-           
             print("Getting data in progress...")
             # Get the latest data
             bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
@@ -60,7 +59,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     'status': False,
                     'message': "polling"
                 }))
-
 
             if (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
                 await self.send(text_data=json.dumps({
@@ -138,7 +136,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 
                 # Check sell condition
                 sell_condition = rsi.rsi < 22
-
                 
                 if not buy_condition.iloc[-1] and not sell_condition.iloc[-1]:
                     await self.send(text_data=json.dumps({
