@@ -191,12 +191,11 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 await asyncio.sleep(2)  # wait for 60 seconds
        
         except Exception as e:
-            error_message = str(e)
-            logger.error(f"Error in WebSocket task: {error_message}")
-            await self.send(text_data=json.dumps({
-                'message': 'fail',
-                'error': error_message
-            }))
+            logger.error(f"Error in WebSocket task: {e}")
+            # await self.send(text_data=json.dumps({
+            #     'message': 'fail',
+            #     'error': error_message
+            # }))
             await self.close()
  
 
