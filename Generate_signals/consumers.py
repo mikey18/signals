@@ -188,7 +188,10 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     print("-" * 30)
                 await asyncio.sleep(2)  # wait for 60 seconds
        
-        except Exception:
+        except Exception as e:
+            await self.send(text_data=json.dumps({
+                'message': e
+            }))
             await self.close()
  
 
