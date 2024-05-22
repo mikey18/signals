@@ -91,6 +91,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
+            print("MT5 initialization failed")
         await self.accept()
         self.send_task = False
         self.task_running = False
@@ -127,16 +129,12 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 df = pd.DataFrame(bars)
                 df['time'] = pd.to_datetime(df['time'], unit='s')
                 df = df.set_index('time')
-
                 # Calculate RSI
                 rsi = vbt.RSI.run(df['close'], 14)
-                
                 # Check buy condition
                 buy_condition = rsi.rsi > 78
-                
                 # Check sell condition
                 sell_condition = rsi.rsi < 22
-                
                 if not buy_condition.iloc[-1] and not sell_condition.iloc[-1]:
                     await self.send(text_data=json.dumps({
                         'status': False,
@@ -182,6 +180,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     print(f"Take profit: {take_profit:.5f}")
                     print("-" * 30)
                 await asyncio.sleep(2)  # wait for 60 seconds
+       
         except Exception:
             await self.close()
  
