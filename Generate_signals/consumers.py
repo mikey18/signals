@@ -50,12 +50,20 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             while True:
                 print("Getting data in progress...")
                 # Get the latest data
+
+                account_info = mt5.account_info()
+                if account_info is None:
+                    logger.info("Failed to get account information")
+                else:
+                    # display the account balance
+                    logger.info(f"Account balance: {account_info.balance}")
+
+
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
 
                 logger.info('trying 1')
-                logger.info(df['close'].iloc[-1])
-        
+
                 df['time'] = pd.to_datetime(df['time'], unit='s')
 
                 logger.info('trying 2')
