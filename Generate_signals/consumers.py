@@ -58,8 +58,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     logger.info(f"date: {datetime.now(timezone.utc)}")
 
                 symbols = mt5.symbols_get()
-                if self.symbol not in [symbol.name for symbol in symbols]:
-                    logger.error(f"Symbol {self.symbol} is not available.")
+                for symbol in symbols:
+                    logger.error(f"{symbol}")
 
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 365)
                 df = pd.DataFrame(bars)
