@@ -54,8 +54,9 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     logger.info("Failed to get account information")
                 else:
                     logger.info(f"Account balance: {account_info.balance}")
-
-                bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 365)
+                    
+                utc_from = datetime(2020, 1, 10, tzinfo=timezone)
+                bars = mt5.copy_rates_from("EURUSD", mt5.TIMEFRAME_H4, utc_from, 10)
                 df = pd.DataFrame(bars)
                 df['time'] = pd.to_datetime(df['time'], unit='s')
                 df = df.set_index('time')
