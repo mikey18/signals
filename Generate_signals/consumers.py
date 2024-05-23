@@ -50,11 +50,11 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             while True:
                 print("Getting data in progress...")
                 # Get the latest data
-                bars = mt5.copy_rates_from('XAUUSD', mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
+                bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
 
                 logger.info('trying 1')
-                logger.info(bars)
+                logger.info(mt5)
         
                 df['time'] = pd.to_datetime(df['time'], unit='s')
 
