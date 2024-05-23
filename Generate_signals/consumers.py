@@ -11,15 +11,15 @@ logger = logging.getLogger(__name__)
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-            print("MT5 initialization failed")
-            await self.send(text_data=json.dumps({
-                'message': "failed to load mt5"
-            }))
+        # if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
+        #     print("MT5 initialization failed")
+        #     await self.send(text_data=json.dumps({
+        #         'message': "failed to load mt5"
+        #     }))
         
-        await self.send(text_data=json.dumps({
-            'message': "started"
-        }))
+        # await self.send(text_data=json.dumps({
+        #     'message': "started"
+        # }))
         self.send_task = False
         self.task_running = False
 
@@ -49,25 +49,15 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         try:
             while True:
                 print("Getting data in progress...")
-                # Get the latest data
-
                 account_info = mt5.account_info()
                 if account_info is None:
                     logger.info("Failed to get account information")
                 else:
-                    # display the account balance
                     logger.info(f"Account balance: {account_info.balance}")
-
 
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
-
-                logger.info('trying 1')
-
                 df['time'] = pd.to_datetime(df['time'], unit='s')
-
-                logger.info('trying 2')
-
                 df = df.set_index('time')
                 current_price = df['close'].iloc[-1]
 
@@ -126,15 +116,15 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-            print("MT5 initialization failed")
-            await self.send(text_data=json.dumps({
-                'message': "failed to load mt5"
-            }))
+        # if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
+        #     print("MT5 initialization failed")
+        #     await self.send(text_data=json.dumps({
+        #         'message': "failed to load mt5"
+        #     }))
         
-        await self.send(text_data=json.dumps({
-            'message': "started"
-        }))
+        # await self.send(text_data=json.dumps({
+        #     'message': "started"
+        # }))
         self.send_task = False
         self.task_running = False
 
@@ -168,9 +158,6 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                 # Get the latest data
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
                 df = pd.DataFrame(bars)
-
-                logger.info(self.symbol)
-
                 df['time'] = pd.to_datetime(df['time'], unit='s')
                 df = df.set_index('time')
                 # Calculate RSI
