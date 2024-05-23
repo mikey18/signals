@@ -1,6 +1,6 @@
 import pandas as pd
 import vectorbt as vbt
-import datetime
+from datetime import datetime, timezone
 import MetaTrader5 as mt5
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -55,7 +55,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 else:
                     logger.info(f"Account balance: {account_info.balance}")
 
-                bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.datetime.now(), 365)
+                bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 365)
                 df = pd.DataFrame(bars)
                 df['time'] = pd.to_datetime(df['time'], unit='s')
                 df = df.set_index('time')
