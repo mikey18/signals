@@ -59,7 +59,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 
                 symbols = mt5.symbols_get()
                 for symbol in symbols:
-                    logger.error(f"{symbol}")
+                    logger.error(f"{symbol.name}")
 
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 365)
                 df = pd.DataFrame(bars)
