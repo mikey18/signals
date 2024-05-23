@@ -54,6 +54,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     logger.info("Failed to get account information")
                 else:
                     logger.info(f"Account balance: {account_info.balance}")
+                    logger.info(f"time frame: {mt5.TIMEFRAME_M1}")
+                    logger.info(f"date: {datetime.now(timezone.utc)}")
 
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 365)
                 df = pd.DataFrame(bars)
