@@ -6,20 +6,12 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 import asyncio
 import logging
+
 logger = logging.getLogger(__name__)
 
 class PremiumCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        # if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-        #     print("MT5 initialization failed")
-        #     await self.send(text_data=json.dumps({
-        #         'message': "failed to load mt5"
-        #     }))
-        
-        # await self.send(text_data=json.dumps({
-        #     'message': "started"
-        # }))
         self.send_task = False
         self.task_running = False
 
@@ -32,14 +24,13 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
         try:
             client_data = json.loads(text_data)
             self.symbol = 'XAUUSD'
-            if client_data["msg"] == "ping" and self.task_running == False:
-                self.task_running = True
-                self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
-
-            elif client_data["msg"] != "ping" and self.task_running:
-                await self.send(text_data=json.dumps({'status': False}))
-
-            elif client_data["msg"] != "ping":
+            if client_data["msg"] == "ping":
+                if self.task_running:
+                    await self.send(text_data=json.dumps({'status': False}))
+                else:
+                    self.task_running = True
+                    self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
+            else:
                 await self.send(text_data=json.dumps({'message': f"error"}))
                 await self.close()
         except Exception:
@@ -109,7 +100,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     print(f"14 SMA: {ma14.ma.iloc[-1]:.5f} (below 50 SMA and 50 SMA < 365 SMA)")
                     print(f"Current price: {current_price:.5f}")
                     print("-" * 30)
-                await asyncio.sleep(2)  # wait for 60 seconds
+                
+                await asyncio.sleep(60)  # wait for 60 seconds
         except Exception as e:
             logger.error(f"Error in WebSocket task: {e}")
             # await self.send(text_data=json.dumps({
@@ -121,15 +113,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
 class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
-        # if not mt5.initialize("C:\\Program Files\\MetaTrader 5\\terminal64.exe"):
-        #     print("MT5 initialization failed")
-        #     await self.send(text_data=json.dumps({
-        #         'message': "failed to load mt5"
-        #     }))
-        
-        # await self.send(text_data=json.dumps({
-        #     'message': "started"
-        # }))
         self.send_task = False
         self.task_running = False
 
@@ -141,15 +124,14 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             client_data = json.loads(text_data)
-            self.symbol = 'XAUUSD'  # or any other valid symbol
-            if client_data["msg"] == "ping" and self.task_running == False:
-                self.task_running = True
-                self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
-
-            elif client_data["msg"] != "ping" and self.task_running:
-                await self.send(text_data=json.dumps({'status': False}))
-
-            elif client_data["msg"] != "ping":
+            self.symbol = 'XAUUSD'
+            if client_data["msg"] == "ping":
+                if self.task_running:
+                    await self.send(text_data=json.dumps({'status': False}))
+                else:
+                    self.task_running = True
+                    self.send_task = asyncio.create_task(self.get_buy_or_sell_signal())
+            else:
                 await self.send(text_data=json.dumps({'message': f"error"}))
                 await self.close()
         except Exception:
@@ -215,7 +197,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
                     print(f"Stop loss: {stop_loss:.5f}")
                     print(f"Take profit: {take_profit:.5f}")
                     print("-" * 30)
-                await asyncio.sleep(2)  # wait for 60 seconds
+                await asyncio.sleep(60)  # wait for 60 seconds
        
         except Exception as e:
             logger.error(f"Error in WebSocket task: {e}")
