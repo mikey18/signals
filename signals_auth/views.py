@@ -101,12 +101,11 @@ class RegisterView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        user_data = serializer.data
 
         return Response({
             "status": 200,
             "message": 'Successful',
-            "user": user_data
+            "user": serializer.data
         })
 
 class LoginAPIView(APIView):
@@ -137,10 +136,9 @@ class LoginAPIView(APIView):
         if not user.check_password(request.data['password']) or user.is_superuser:
             return self.bad_response()
 
-        token = self.get_token(user)
         return Response({
             "status": 200,
-            "token": token
+            "token": self.get_token(user)
         })
            
 class LogoutAPIView(APIView):
