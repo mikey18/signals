@@ -50,6 +50,9 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     logger.info(f"date: {datetime.now(timezone.utc)}")
 
                 bars = mt5.copy_rates_from(self.symbol, mt5.TIMEFRAME_M1, datetime.now(timezone.utc), 365)
+                if bars is None:
+                    logger.info(f"error: {mt5.last_error()}")
+                
                 logger.info(f"{bars}")
 
                 df = pd.DataFrame(bars)
