@@ -262,8 +262,8 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     'status': False,
                     'message': "Trade request failed"
                 }))
-                await asyncio.sleep(59)
                 # print(f"Trade request send failed, error code: {mt5.last_error()}")
+                await asyncio.sleep(59)
                 continue
               
             # Check the profit or loss from the trade result
