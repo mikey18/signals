@@ -70,7 +70,10 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     '14 SMA': ma14.ma.iloc[-1],
                     'Current Price': current_price
                 }
-                await self.send(text_data=json.dumps(data))
+                await self.send(text_data=json.dumps({
+                    'status': True,
+                    'condition':'BUY'
+                }))
                 return data
             
             elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 59):
@@ -81,7 +84,10 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     '14 SMA': ma14.ma.iloc[-1],
                     'Current Price': current_price
                 }
-                await self.send(text_data=json.dumps(data))
+                await self.send(text_data=json.dumps({
+                    'status': True,
+                    'condition':'SELL'
+                }))                
                 return data
             # await asyncio.sleep(59)  # wait for 59 seconds
         except Exception as e:
@@ -113,7 +119,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 # Trade is closed
                 return True
             await self.send(text_data=json.dumps({
-                "message": "existing trade still in progress"
+                "message": "existing trade in progress"
             }))
             await asyncio.sleep(1)  # wait for a second before checking again
 
@@ -155,6 +161,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             return {'status': 'error', 'retcode': result.retcode, 'comment': result.comment}
         else:
             await self.send(text_data=json.dumps({
+                "status": True,
                 "message": "trade placed"
             }))
             closed_trade = await self.wait_for_trade_close(result.order)
@@ -205,7 +212,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             if await self.check_open_positions():
                 data = {
                     'status': False,
-                    "message": "existing trade still in progress"
+                    "message": "existing trade in progress"
                 }
                 await self.send(text_data=json.dumps(data))
                 await asyncio.sleep(1)
@@ -274,10 +281,10 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             new_balance = account_info.balance
 
             if response['trade_status'] == "loss":
-                await self.send(text_data=json.dumps({
-                    'status': False,
-                    'message': "A loss was made."
-                }))
+                # await self.send(text_data=json.dumps({
+                #     'status': False,
+                #     'message': "A loss was made."
+                # }))
                 # print("A loss was made.")
                 # Update the current step or phase
                 if current_step < 3:
@@ -289,10 +296,10 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     else:
                         current_phase = 0
             elif response['trade_status'] == "profit":
-                await self.send(text_data=json.dumps({
-                    'status': True,
-                    'message': "A profit was made."
-                }))
+                # await self.send(text_data=json.dumps({
+                #     'status': True,
+                #     'message': "A profit was made."
+                # }))
                 # print("A profit was made.")
                 # Determine the next step based on the balance
                 if new_balance > self.initial_balance:
