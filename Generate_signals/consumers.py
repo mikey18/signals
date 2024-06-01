@@ -168,10 +168,10 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             if closed_trade:
                 trade_status = await self.check_profit_or_loss(self.initial_balance)
 
-                await self.send(text_data=json.dumps({
-                    "message": "trade done",
-                    "result": trade_status
-                }))
+                # await self.send(text_data=json.dumps({
+                #     "message": "trade done",
+                #     "result": trade_status
+                # }))
                 return {'status': 'success', 'order': result.order, 'retcode': result.retcode, 'trade_status': trade_status}
     
     async def get_price(self, symbol, trade_type):
@@ -277,14 +277,9 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
             # trade_status = response['trade_status']
 
             # Get the new balance from the MT5 terminal
-            account_info = mt5.account_info()
-            new_balance = account_info.balance
+            new_balance = mt5.account_info().balance
 
             if response['trade_status'] == "loss":
-                # await self.send(text_data=json.dumps({
-                #     'status': False,
-                #     'message': "A loss was made."
-                # }))
                 # print("A loss was made.")
                 # Update the current step or phase
                 if current_step < 3:
@@ -296,10 +291,6 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                     else:
                         current_phase = 0
             elif response['trade_status'] == "profit":
-                # await self.send(text_data=json.dumps({
-                #     'status': True,
-                #     'message': "A profit was made."
-                # }))
                 # print("A profit was made.")
                 # Determine the next step based on the balance
                 if new_balance > self.initial_balance:
@@ -310,6 +301,19 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 else:
                     # Remain in the same phase but reset to initial step
                     current_step = 0
+
+            await self.send(text_data=json.dumps({
+                'message': "Trade done",
+                'result': response['trade_status'],  # trade_status will be either "profit" or "loss"
+                'data': {
+                    "current_phase": current_phase + 1, # int
+                    "current_step": current_step, # int
+                    "lot size": lot_size, # float
+                    "stop loss": stop_loss, # float
+                    "take profit": take_profit, # float
+                    "new_account_balance": new_balance # float
+                }
+            }))
 
             # Print the current phase, step, lot size, and take profit
             # print(f"Current Phase: {current_phase + 1}")
