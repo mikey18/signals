@@ -72,7 +72,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 }
                 await self.send(text_data=json.dumps({
                     'status': True,
-                    'condition':'BUY'
+                    'message':'BUY'
                 }))
                 return data
             
@@ -86,7 +86,7 @@ class PremiumCheckConsumer(AsyncWebsocketConsumer):
                 }
                 await self.send(text_data=json.dumps({
                     'status': True,
-                    'condition':'SELL'
+                    'message':'SELL'
                 }))                
                 return data
             # await asyncio.sleep(59)  # wait for 59 seconds
