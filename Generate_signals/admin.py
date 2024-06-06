@@ -1,8 +1,5 @@
 from django.contrib import admin
-from .models import Room, RoomImages, LogRoom
+from .models import Trade_History
 
-admin.site.register(Room)
-admin.site.register(RoomImages)
-admin.site.register(LogRoom)
+admin.site.register(Trade_History)
 
-# Register your models here.
