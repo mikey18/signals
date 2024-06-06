@@ -22,8 +22,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/',  include('signals_auth.urls')),
-    path('trade/',  include('Generate_signals.urls')),
+    path('auth/', include('signals_auth.urls')),
+    path('trade/', include('Generate_signals.urls')),
+    path('notif/', include('notification.urls')),
 ]
 
 if settings.DEBUG:
