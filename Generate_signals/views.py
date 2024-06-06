@@ -27,7 +27,7 @@ class Seller_OrderHistoryAPI(APIView):
             #     # for device in devices:
             #     devices.send_message(message)
 
-            orders = Trade_History.objects.all().order_by('-created_at')[:7]
+            orders = Trade_History.objects.all().order_by('created_at')[:7]
             serializer = Trade_HistorySerializer(orders, many=True)
             return Response({
                 'status': 200,
