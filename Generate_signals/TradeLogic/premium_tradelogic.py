@@ -14,10 +14,9 @@ logger = logging.getLogger(__name__)
 class Premium_Trade(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        self.channel_layer = get_channel_layer()
         self.loop = None
         self.room = 'xauusd'
-        self.channel_layer = get_channel_layer()
-
 
     async def get_buy_or_sell_signal(self):
         try:

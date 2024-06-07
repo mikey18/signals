@@ -439,11 +439,7 @@ class FreeCheckConsumer(AsyncWebsocketConsumer):
 class PremiumCheckConsumerNew(AsyncWebsocketConsumer):
     async def connect(self):
         self.room = 'xauusd'
-        await self.channel_layer.group_add(
-            self.room,
-            self.channel_name
-        )
-
+        self.task_running = False
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -453,7 +449,22 @@ class PremiumCheckConsumerNew(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        pass
+        try:
+            client_data = json.loads(text_data)
+            if client_data["msg"] == "ping":
+                if self.task_running:
+                    await self.send(text_data=json.dumps({'status': False}))
+                else:
+                    self.task_running = True
+                    await self.channel_layer.group_add(
+                        self.room,
+                        self.channel_name
+                    )
+            else:
+                await self.send(text_data=json.dumps({'message': f"error"}))
+                await self.close()
+        except Exception:
+            await self.close()
 
     async def existing_trade(self, event):
         await self.send(text_data=json.dumps({
