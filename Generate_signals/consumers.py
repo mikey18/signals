@@ -460,6 +460,10 @@ class PremiumCheckConsumerNew(AsyncWebsocketConsumer):
                         self.room,
                         self.channel_name
                     )
+                    await self.send(text_data=json.dumps({
+                        'status': True,
+                        'message': 'You are now receivig messages'
+                    }))
             else:
                 await self.send(text_data=json.dumps({'status': False}))
                 await self.close()
