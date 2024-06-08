@@ -462,7 +462,7 @@ class PremiumCheckConsumerNew(AsyncWebsocketConsumer):
                     )
                     await self.send(text_data=json.dumps({
                         'status': True,
-                        'message': 'You are now receivig messages'
+                        'message': 'You are now receiving messages'
                     }))
             else:
                 await self.send(text_data=json.dumps({'status': False}))
