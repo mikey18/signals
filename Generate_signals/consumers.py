@@ -461,7 +461,7 @@ class PremiumCheckConsumerNew(AsyncWebsocketConsumer):
                         self.channel_name
                     )
             else:
-                await self.send(text_data=json.dumps({'message': f"error"}))
+                await self.send(text_data=json.dumps({'status': False}))
                 await self.close()
         except Exception:
             await self.close()

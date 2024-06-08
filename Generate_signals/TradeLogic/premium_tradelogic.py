@@ -8,6 +8,8 @@ import logging
 from django.apps import apps
 from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
+from functions.notification import send_notification
+
 logger = logging.getLogger(__name__)
 
 
@@ -176,6 +178,13 @@ class Premium_Trade(threading.Thread):
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             return {'status': 'error', 'retcode': result.retcode, 'comment': result.comment}
         else:
+            # send notification
+            asyncio.create_task(send_notification(
+                title="Trade placed",
+                body="A signal was received and trade has been placed"
+            ))
+            # send notification
+            
             await self.channel_layer.group_send(
                 self.room,
                 {
@@ -184,15 +193,9 @@ class Premium_Trade(threading.Thread):
                     "message": "trade placed"
                 }
             )
-
             closed_trade = await self.wait_for_trade_close(result.order)
             if closed_trade:
                 trade_status = await self.check_profit_or_loss(self.initial_balance)
-
-                # await self.send(text_data=json.dumps({
-                #     "message": "trade done",
-                #     "result": trade_status
-                # }))
                 return {'status': 'success', 'order': result.order, 'retcode': result.retcode, 'trade_status': trade_status}
     
     async def get_price(self, symbol, trade_type):
@@ -353,8 +356,7 @@ class Premium_Trade(threading.Thread):
 
 
     async def initiate_system(self):
-        task = asyncio.create_task(self.money_management())
-        await task  # Opt
+        await self.money_management()
 
     def run(self):
         # self.loop = asyncio.new_event_loop()
