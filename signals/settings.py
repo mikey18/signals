@@ -182,6 +182,12 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
 ]
 
+#CELERY CONFIGURATIONS
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIMEZONE = 'UTC'
+#CELERY CONFIGURATIONS
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

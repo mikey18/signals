@@ -2,6 +2,7 @@ import MetaTrader5 as mt5
 import atexit
 import logging
 from .premium_tradelogic import Premium_Trade
+# from ..tasks import run_my_task_class_method
 logger = logging.getLogger(__name__)
 
 def shutdown_mt5():
@@ -28,9 +29,12 @@ def start_mt5():
             logger.error("Failed to login to demo account")
         # Register the MT5 shutdown function to be called on exit
         atexit.register(shutdown_mt5)
-
+        
         thread = Premium_Trade()
         thread.daemon = True
         thread.start()
+
+        # run_my_task_class_method.delay()
+
 
   
