@@ -15,8 +15,7 @@ class Seller_OrderHistoryAPI(APIView):
                 'status': 200,
                 'data': serializer.data
             })
-        except Exception as e:
-            print(e)
+        except Exception:
             return Response({
                 'status': 400
             })

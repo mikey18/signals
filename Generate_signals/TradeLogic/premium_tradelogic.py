@@ -129,9 +129,8 @@ class Premium_Trade(threading.Thread):
             
             await asyncio.sleep(1)  # wait for a second before checking again
 
-    async def place_trade(self, symbol, volume, sl, tp, trade_type):
+    async def place_trade(self, symbol, volume, sl, tp, trade_type, price):
         # Define the trade request
-        price = await self.get_price(self.symbol, trade_type)
         try:
             request = {
                 "action": mt5.TRADE_ACTION_DEAL,
@@ -147,17 +146,7 @@ class Premium_Trade(threading.Thread):
             }
 
             # Send the trade request
-            result = mt5.order_send(request)
-            # Save trade to db
-            Trade_History = apps.get_model('Generate_signals', 'Trade_History')
-            await database_sync_to_async(Trade_History.objects.create)(
-                symbol=symbol,
-                stop_loss=sl,
-                take_profit=tp,
-                price=price,
-                type=trade_type
-            )
-
+            result = mt5.order_send(request)        
             return result
         except Exception as e:
             logger.error(f"place trade error: {e}")
@@ -172,8 +161,9 @@ class Premium_Trade(threading.Thread):
         sl = data['sl']
         tp = data['tp']
         condition = data['condition']
+        price=data['price']
 
-        result = await self.place_trade(symbol, volume, sl, tp, condition)
+        result = await self.place_trade(symbol, volume, sl, tp, condition, price)
 
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             return {'status': 'error', 'retcode': result.retcode, 'comment': result.comment}
@@ -190,7 +180,7 @@ class Premium_Trade(threading.Thread):
                 {
                     'type': 'existing.trade',
                     "status": True,
-                    "message": "trade placed"
+                    "message": "A signal was received and trade has been placed"
                 }
             )
             closed_trade = await self.wait_for_trade_close(result.order)
@@ -276,12 +266,14 @@ class Premium_Trade(threading.Thread):
                 take_profit = await self.convert_pips_to_price(open_price, -take_profit_pips, point)
 
             # Define the trade request
+            price = await self.get_price(self.symbol, signal_response['condition'])
             trade_request = {
                 "symbol": self.symbol,
                 "volume": lot_size,
                 "sl": stop_loss,
                 "tp": take_profit,
-                "condition": signal_response['condition']
+                "condition": signal_response['condition'],
+                "price": price
             }
 
             # Send the trade request to the appropriate API and get the trade result
@@ -290,6 +282,18 @@ class Premium_Trade(threading.Thread):
 
             # Check the response
             if response['status'] == 'success':
+                # Save trade to db
+                Trade_History = apps.get_model('Generate_signals', 'Trade_History')
+                await database_sync_to_async(Trade_History.objects.create)(
+                    symbol=self.symbol,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    price=price,
+                    type=signal_response['condition'],
+                    result=response['trade_status']
+                )
+                # Save trade to db
+
                 await self.channel_layer.group_send(
                     self.room,
                     {

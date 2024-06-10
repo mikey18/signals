@@ -1,8 +1,8 @@
-  <rewrite>
-            <rules>
-                <rule name="websocket">
-                    <match url="ws/(.*)" />
-                    <action type="Rewrite" url="ws://81.0.249.14:80/{R:1}" />
-                </rule>
-            </rules>
-        </rewrite>
+<rewrite>
+    <rules>
+        <rule name="websocket">
+            <match url="ws/(.*)" />
+            <action type="Rewrite" url="ws://81.0.249.14:80/{R:1}" />
+        </rule>
+    </rules>
+</rewrite>
