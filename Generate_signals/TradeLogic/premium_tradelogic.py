@@ -171,8 +171,10 @@ class Premium_Trade(threading.Thread):
         result = await self.place_trade(symbol, volume, sl, tp, condition, price)
 
         if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print("trade couldn't place")
             return {'status': 'error', 'retcode': result.retcode, 'comment': result.comment}
         else:
+            print("trade placed")
             # send notification
             asyncio.create_task(send_notification(
                 title="Trade placed",
@@ -201,6 +203,26 @@ class Premium_Trade(threading.Thread):
     async def convert_pips_to_price(self, price, pips, point):
         return price + (pips * point)
     
+
+    async def has_more_than_two_decimal_places(self, value):
+        # Convert the value to a string to check the number of decimal places
+        str_value = str(value)
+        
+        # Check if the value has a decimal point
+        if '.' in str_value:
+            # Split the string into the integer and decimal parts
+            integer_part, decimal_part = str_value.split('.')
+            
+            # Check if the decimal part has more than two digits
+            return len(decimal_part) > 2
+        return False
+
+    async def convert_to_two_decimal_places(self, value):
+        if await self.has_more_than_two_decimal_places(value):
+            # Use round() to round the value to two decimal places
+            value = round(value, 2)
+        return value
+    
     async def money_management(self):
         self.symbol = 'XAUUSD'
         risk = 0.01 
@@ -216,7 +238,8 @@ class Premium_Trade(threading.Thread):
         if type(money_to_risk) is int:
             initial_lot_size = round((money_to_risk / stop_loss_pips), 1)
         elif type(money_to_risk) is float:
-            initial_lot_size = money_to_risk / stop_loss_pips
+            calculation = money_to_risk / stop_loss_pips
+            initial_lot_size = await self.convert_to_two_decimal_places(calculation)
 
         # Define the phases and steps
         phases = {
