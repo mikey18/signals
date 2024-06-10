@@ -250,16 +250,14 @@ class Premium_Trade(threading.Thread):
                 continue
             # Call the signal API
 
-            # signal_response = await self.get_buy_or_sell_signal()
-            # # signal_response = {"status": True, "condition":"BUY"}
+            signal_response = await self.get_buy_or_sell_signal()
+            # signal_response = {"status": True, "condition":"BUY"}
 
-            # # If the signal is not 'buy' or 'sell', skip this iteration
-            # if signal_response['status'] is False:
-            #     await asyncio.sleep(59)
-            #     continue
-            signal_response = {
-                "condition":"BUY"
-            }
+            # If the signal is not 'buy' or 'sell', skip this iteration
+            if signal_response['status'] is False:
+                await asyncio.sleep(59)
+                continue
+         
 
             # Get the lot size, stop loss, and take profit for the current phase and step
             lot_size, stop_loss_pips, take_profit_pips = phases[current_phase + 1][current_step]
