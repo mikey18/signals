@@ -40,6 +40,8 @@ class Premium_Trade(threading.Thread):
             # print("Checking conditions in progress...\n")
             if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
             and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 59)):
+                logger.log("checking for signal")
+
                 data = {
                     'status': False,
                     'message': "checking for signal..."
@@ -54,6 +56,8 @@ class Premium_Trade(threading.Thread):
                 return data
 
             elif (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
+                logger.log("buy signal found")
+
                 data = {
                     'status': True,
                     'condition':'BUY',
@@ -72,6 +76,8 @@ class Premium_Trade(threading.Thread):
                 return data
             
             elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 59):
+                logger.log("sell signal found")
+
                 data = {
                     'status': True,
                     'condition':'SELL',
