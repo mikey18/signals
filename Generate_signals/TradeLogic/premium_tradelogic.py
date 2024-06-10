@@ -276,8 +276,8 @@ class Premium_Trade(threading.Thread):
                 continue
             # Call the signal API
 
-            # signal_response = await self.get_buy_or_sell_signal()
-            signal_response = {"status": True, "condition":"BUY"}
+            signal_response = await self.get_buy_or_sell_signal()
+            # signal_response = {"status": True, "condition":"BUY"}
 
             # If the signal is not 'buy' or 'sell', skip this iteration
             if signal_response['status'] is False:
