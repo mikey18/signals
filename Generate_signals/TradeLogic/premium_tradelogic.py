@@ -40,7 +40,7 @@ class Premium_Trade(threading.Thread):
             # print("Checking conditions in progress...\n")
             if (not (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40)
             and not (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 59)):
-                logger.log("checking for signal")
+                print("checking for signal")
 
                 data = {
                     'status': False,
@@ -56,7 +56,7 @@ class Premium_Trade(threading.Thread):
                 return data
 
             elif (ma14.ma.iloc[-1] > ma50.ma.iloc[-1] > ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] < 40):
-                logger.log("buy signal found")
+                print("buy signal found")
 
                 data = {
                     'status': True,
@@ -76,7 +76,7 @@ class Premium_Trade(threading.Thread):
                 return data
             
             elif (ma14.ma.iloc[-1] < ma50.ma.iloc[-1] < ma365.ma.iloc[-1] and rsi.rsi.iloc[-1] > 59):
-                logger.log("sell signal found")
+                print("sell signal found")
 
                 data = {
                     'status': True,
@@ -97,7 +97,6 @@ class Premium_Trade(threading.Thread):
             # await asyncio.sleep(59)  # wait for 59 seconds
         except Exception as e:
             logger.error(f"Error in WebSocket task: {e}")
-            await self.close()
 
     async def check_profit_or_loss(self, initial_balance):
         # Get the new balance from the MT5 terminal
