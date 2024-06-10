@@ -127,8 +127,8 @@ class Premium_Trade(threading.Thread):
                 self.room,
                 {
                     'type': 'existing.trade',
-                    "status": False,
-                    "message": "existing trade in progress"
+                    "status": True,
+                    "message": "active trade in progress"
                 }
             )
             
@@ -260,8 +260,8 @@ class Premium_Trade(threading.Thread):
                     self.room,
                     {
                         'type': 'existing.trade',
-                        'status': False,
-                        "message": "existing trade in progress"
+                        'status': True,
+                        "message": "active trade in progress"
                     }
                 )
                 await asyncio.sleep(1)
