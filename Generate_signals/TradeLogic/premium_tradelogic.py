@@ -123,12 +123,16 @@ class Premium_Trade(threading.Thread):
                 # Trade is closed
                 return True
         
+            print('trade in progress')
             await self.channel_layer.group_send(
                 self.room,
                 {
-                    'type': 'existing.trade',
-                    "status": True,
-                    "message": "active trade in progress"
+                    'type': 'trade.finished',
+                    'status': True,
+                    "message": "active trade in progress",
+                    "data": {
+                        "symbol": self.symbol
+                    }
                 }
             )
             
@@ -256,20 +260,24 @@ class Premium_Trade(threading.Thread):
         while True:
             if await self.check_open_positions():
                 # await self.send(text_data=json.dumps(data))
+                print('trade in progress 0')
                 await self.channel_layer.group_send(
                     self.room,
                     {
-                        'type': 'existing.trade',
+                        'type': 'trade.finished',
                         'status': True,
-                        "message": "active trade in progress"
+                        "message": "active trade in progress",
+                        "data": {
+                            "symbol": self.symbol
+                        }
                     }
                 )
                 await asyncio.sleep(1)
                 continue
             # Call the signal API
 
-            signal_response = await self.get_buy_or_sell_signal()
-            # signal_response = {"status": True, "condition":"BUY"}
+            # signal_response = await self.get_buy_or_sell_signal()
+            signal_response = {"status": True, "condition":"BUY"}
 
             # If the signal is not 'buy' or 'sell', skip this iteration
             if signal_response['status'] is False:
@@ -285,13 +293,10 @@ class Premium_Trade(threading.Thread):
             point = mt5.symbol_info(self.symbol).point
             
             # Calculate the stop loss and take profit prices
-            if signal_response['condition'] == 'BUY':
-                stop_loss = await self.convert_pips_to_price(open_price, -stop_loss_pips, point)
-                take_profit = await self.convert_pips_to_price(open_price, take_profit_pips, point)
+            multiplier = 1 if signal_response['condition'] == 'BUY' else -1
+            stop_loss = await self.convert_pips_to_price(open_price, multiplier * -stop_loss_pips, point)
+            take_profit = await self.convert_pips_to_price(open_price, multiplier * take_profit_pips, point)
             
-            elif signal_response['condition'] == 'SELL':
-                stop_loss = await self.convert_pips_to_price(open_price, stop_loss_pips, point)
-                take_profit = await self.convert_pips_to_price(open_price, -take_profit_pips, point)
 
             # Define the trade request
             price = await self.get_price(self.symbol, signal_response['condition'])
@@ -311,6 +316,7 @@ class Premium_Trade(threading.Thread):
             # Check the response
             if response['status'] == 'success':
                 # Save trade to db
+                print('saving to db')
                 Trade_History = apps.get_model('Generate_signals', 'Trade_History')
                 await database_sync_to_async(Trade_History.objects.create)(
                     symbol=self.symbol,
@@ -327,6 +333,7 @@ class Premium_Trade(threading.Thread):
                     {
                         'type': 'trade.finished',
                         "status": True,
+                        'message': "Trade placed",
                         'data': response
                     }
                 )
@@ -376,8 +383,10 @@ class Premium_Trade(threading.Thread):
                 self.room,
                 {
                     'type': 'trade.finished',
-                    'status': response['trade_status'],  # trade_status will be either "profit" or "loss"
+                    'status': True,
+                    'message': 'Trade completed',
                     'data': {
+                        'status': response['trade_status'],  # trade_status will be either "profit" or "loss"
                         "current_phase": current_phase + 1, # int
                         "current_step": current_step, # int
                         "lot size": lot_size, # float

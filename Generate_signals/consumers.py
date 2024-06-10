@@ -479,6 +479,7 @@ class PremiumCheckConsumerNew(AsyncWebsocketConsumer):
     async def trade_finished(self, event):
         await self.send(text_data=json.dumps({
             'status': event['status'],
+            'message': event['message'],
             'data': event['data']
         }))
 
