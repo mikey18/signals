@@ -120,10 +120,10 @@ class Premium_Trade(threading.Thread):
             # Get all active orders
             positions = mt5.positions_get(ticket=order_id)
             if not positions:
-                # Trade is closed
                 return True
-        
+            
             print('trade in progress')
+            last_position = await self.get_last_position()
             await self.channel_layer.group_send(
                 self.room,
                 {
@@ -131,11 +131,13 @@ class Premium_Trade(threading.Thread):
                     'status': True,
                     "message": "active trade in progress",
                     "data": {
-                        "symbol": self.symbol
+                        "symbol": self.symbol,
+                        "stop_loss": last_position.sl,
+                        "take_profit": last_position.tp,
+                        "price": last_position.price_open,
                     }
                 }
             )
-            
             await asyncio.sleep(1)  # wait for a second before checking again
 
     async def place_trade(self, symbol, volume, sl, tp, trade_type, price):
@@ -151,7 +153,8 @@ class Premium_Trade(threading.Thread):
                 "deviation": 10,
                 "magic": 123456,
                 "type": mt5.ORDER_TYPE_BUY if trade_type == 'BUY' else mt5.ORDER_TYPE_SELL,
-                "type_filling": mt5.ORDER_FILLING_FOK
+                "type_filling": mt5.ORDER_FILLING_FOK,
+                "comment": 'signal-server'
             }
 
             # Send the trade request
@@ -207,7 +210,6 @@ class Premium_Trade(threading.Thread):
     async def convert_pips_to_price(self, price, pips, point):
         return price + (pips * point)
     
-
     async def has_more_than_two_decimal_places(self, value):
         # Convert the value to a string to check the number of decimal places
         str_value = str(value)
@@ -226,6 +228,14 @@ class Premium_Trade(threading.Thread):
             # Use round() to round the value to two decimal places
             value = round(value, 2)
         return value
+    
+    async def get_last_position(self):
+        positions = mt5.positions_get()
+        filtered_positions = [position for position in positions if position.comment.lower().startswith('signal-server')]
+        if filtered_positions:
+            last_position = filtered_positions[-1]
+            return last_position
+        return False
     
     async def money_management(self):
         self.symbol = 'XAUUSD'
@@ -261,6 +271,7 @@ class Premium_Trade(threading.Thread):
             if await self.check_open_positions():
                 # await self.send(text_data=json.dumps(data))
                 print('trade in progress 0')
+                last_position = await self.get_last_position()
                 await self.channel_layer.group_send(
                     self.room,
                     {
@@ -268,7 +279,10 @@ class Premium_Trade(threading.Thread):
                         'status': True,
                         "message": "active trade in progress",
                         "data": {
-                            "symbol": self.symbol
+                            "symbol": self.symbol,
+                            "stop_loss": last_position.sl,
+                            "take_profit": last_position.tp,
+                            "price": last_position.price_open,
                         }
                     }
                 )
@@ -389,9 +403,9 @@ class Premium_Trade(threading.Thread):
                         'status': response['trade_status'],  # trade_status will be either "profit" or "loss"
                         "current_phase": current_phase + 1, # int
                         "current_step": current_step, # int
-                        "lot size": lot_size, # float
-                        "stop loss": stop_loss, # float
-                        "take profit": take_profit, # float
+                        "lot_size": lot_size, # float
+                        "stop_loss": stop_loss, # float
+                        "take_profit": take_profit, # float
                         "new_account_balance": new_balance # float
                     }
                 }
