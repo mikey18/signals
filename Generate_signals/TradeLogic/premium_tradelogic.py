@@ -43,7 +43,7 @@ class Premium_Trade(threading.Thread):
                 print("checking for signal")
 
                 data = {
-                    'status': False,
+                    'status': True,
                     'message': "checking for signal..."
                 }
                 await self.channel_layer.group_send(
@@ -342,15 +342,15 @@ class Premium_Trade(threading.Thread):
                 )
                 # Save trade to db
 
-                await self.channel_layer.group_send(
-                    self.room,
-                    {
-                        'type': 'trade.finished',
-                        "status": True,
-                        'message': "Trade placed",
-                        'data': response
-                    }
-                )
+                # await self.channel_layer.group_send(
+                #     self.room,
+                #     {
+                #         'type': 'trade.finished',
+                #         "status": True,
+                #         'message': "Trade placed",
+                #         'data': response
+                #     }
+                # )
                 # print("Trade request successful: ", response)
             else:
                 await self.channel_layer.group_send(
