@@ -43,7 +43,7 @@ class Premium_Trade(threading.Thread):
                 print("checking for signal")
 
                 data = {
-                    'status': True,
+                    'status': False,
                     'message': "checking for signal..."
                 }
                 await self.channel_layer.group_send(
@@ -303,17 +303,16 @@ class Premium_Trade(threading.Thread):
             lot_size, stop_loss_pips, take_profit_pips = phases[current_phase + 1][current_step]
 
             # Get the current price
-            open_price = await self.get_price(self.symbol, signal_response['condition'])
+            price = await self.get_price(self.symbol, signal_response['condition'])
             point = mt5.symbol_info(self.symbol).point
             
             # Calculate the stop loss and take profit prices
             multiplier = 1 if signal_response['condition'] == 'BUY' else -1
-            stop_loss = await self.convert_pips_to_price(open_price, multiplier * -stop_loss_pips, point)
-            take_profit = await self.convert_pips_to_price(open_price, multiplier * take_profit_pips, point)
+            stop_loss = await self.convert_pips_to_price(price, multiplier * -stop_loss_pips, point)
+            take_profit = await self.convert_pips_to_price(price, multiplier * take_profit_pips, point)
             
 
             # Define the trade request
-            price = await self.get_price(self.symbol, signal_response['condition'])
             trade_request = {
                 "symbol": self.symbol,
                 "volume": lot_size,
