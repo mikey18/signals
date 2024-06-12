@@ -12,12 +12,10 @@ from functions.notification import send_notification
 
 logger = logging.getLogger(__name__)
 
-
 class Premium_Trade(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.channel_layer = get_channel_layer()
-        self.loop = None
         self.room = 'xauusd'
 
     async def get_buy_or_sell_signal(self):
@@ -156,7 +154,7 @@ class Premium_Trade(threading.Thread):
                 "magic": 123456,
                 "type": mt5.ORDER_TYPE_BUY if trade_type == 'BUY' else mt5.ORDER_TYPE_SELL,
                 "type_filling": mt5.ORDER_FILLING_FOK,
-                "comment": 'signal-server'
+                "comment": f'signal.{self.current_phase}.{self.current_step}'
             }
 
             # Send the trade request
@@ -218,10 +216,9 @@ class Premium_Trade(threading.Thread):
         # Check if the value has a decimal point
         if '.' in str_value:
             # Split the string into the integer and decimal parts
-            integer_part, decimal_part = str_value.split('.')
-            
+            parts = str_value.split('.')
             # Check if the decimal part has more than two digits
-            return len(decimal_part) > 2
+            return len(parts[1]) > 2
         return False
 
     async def convert_to_two_decimal_places(self, value):
@@ -232,7 +229,7 @@ class Premium_Trade(threading.Thread):
     
     async def get_last_position(self):
         positions = mt5.positions_get()
-        filtered_positions = [position for position in positions if position.comment.lower().startswith('signal-server')]
+        filtered_positions = [position for position in positions if position.comment.lower().startswith('signal')]
         if filtered_positions:
             last_position = filtered_positions[-1]
             return last_position
@@ -249,17 +246,41 @@ class Premium_Trade(threading.Thread):
             result=initial_balance
         )
 
+    async def adjust_phases_and_steps(self, trade_status):
+        # Check the profit or loss from the trade result
+        # Get the new balance from the MT5 terminal
+        new_balance = mt5.account_info().balance
+        if trade_status == "loss":
+            # print("A loss was made.")
+            # Update the current step or phase
+            if self.current_step < 3:
+                self.current_step += 1
+            else:
+                self.current_step = 0
+                if self.current_phase < 3:
+                    self.current_phase += 1
+                else:
+                    self.current_phase = 0
+        elif trade_status == "profit":
+            # print("A profit was made.")
+            # Determine the next step based on the balance
+            if new_balance > self.initial_balance:
+                # Reset the current step and phase to initial
+                self.current_step = 0
+                self.current_phase = 0
+                self.initial_balance = new_balance
+            else:
+                # Remain in the same phase but reset to initial step
+                self.current_step = 0
+
     async def money_management(self):
         self.symbol = 'XAUUSD'
         risk = 0.01 
         stop_loss_pips = 250  
-
         # Get the initial balance
         self.initial_balance = mt5.account_info().balance
-
         # Calculate the amount of money to risk
         money_to_risk = self.initial_balance * risk
-
         # Calculate the initial lot size  and Convert to one decimal plavce with round(value, 1) 
         if type(money_to_risk) is int:
             initial_lot_size = round((money_to_risk / stop_loss_pips), 1)
@@ -276,8 +297,8 @@ class Premium_Trade(threading.Thread):
         }
 
         # Set the current phase and step to zero
-        current_phase = 0
-        current_step = 0
+        self.current_phase = 0
+        self.current_step = 0
         
         trade_was_active = False
         while True:
@@ -286,6 +307,8 @@ class Premium_Trade(threading.Thread):
                 trade_data = None
                 print('trade in progress 0')
                 last_position = await self.get_last_position()
+                print(last_position)
+
                 trade_data = {
                     "symbol": last_position.symbol,
                     "trade_type": 'BUY' if last_position.type == 0 else 'SELL',
@@ -319,8 +342,8 @@ class Premium_Trade(threading.Thread):
                         'message': 'Trade completed',
                         'data': {
                             'result': await self.check_profit_or_loss(self.initial_balance),  # trade_status will be either "profit" or "loss"
-                            "current_phase": current_phase + 1, # int
-                            "current_step": current_step, # int
+                            "current_phase": self.current_phase + 1, # int
+                            "current_step": self.current_step, # int
                             "lot_size": trade_data['lot_size'], # float
                             "stop_loss": trade_data['stop_loss'], # float
                             "take_profit": trade_data['take_profit'], # float
@@ -328,7 +351,7 @@ class Premium_Trade(threading.Thread):
                         }
                     }
                 )
-                if last_position.comment.lower().startswith('signal-server'):
+                if last_position.comment.lower().startswith('signal'):
                     # Save trade to db
                     print('saving to db')
                     Trade_History = apps.get_model('Generate_signals', 'Trade_History')
@@ -341,12 +364,14 @@ class Premium_Trade(threading.Thread):
                     # Save trade to db
                     trade_was_active = False
                     trade_data = None
-            # Checks if active trade was from signal server
 
+                    parts = last_position.comment.lower().split(".")
+                    self.current_phase = int(parts[1])
+                    self.current_step = int(parts[2])
+            # Checks if active trade was from signal server
             # Call the signal API
 
             signal_response = await self.get_buy_or_sell_signal()
-            # signal_response = {"status": True, "condition":"BUY"}
 
             # If the signal is not 'buy' or 'sell', skip this iteration
             if signal_response['status'] is False:
@@ -354,7 +379,7 @@ class Premium_Trade(threading.Thread):
                 continue
          
             # Get the lot size, stop loss, and take profit for the current phase and step
-            lot_size, stop_loss_pips, take_profit_pips = phases[current_phase + 1][current_step]
+            lot_size, stop_loss_pips, take_profit_pips = phases[self.current_phase + 1][self.current_step]
 
             # Get the current price
             price = await self.get_price(self.symbol, signal_response['condition'])
@@ -412,33 +437,10 @@ class Premium_Trade(threading.Thread):
                 )
                 await asyncio.sleep(59)
                 continue
-            # Check the profit or loss from the trade result
-            
-            # Get the new balance from the MT5 terminal
-            new_balance = mt5.account_info().balance
-
-            if response['trade_status'] == "loss":
-                # print("A loss was made.")
-                # Update the current step or phase
-                if current_step < 3:
-                    current_step += 1
-                else:
-                    current_step = 0
-                    if current_phase < 3:
-                        current_phase += 1
-                    else:
-                        current_phase = 0
-            elif response['trade_status'] == "profit":
-                # print("A profit was made.")
-                # Determine the next step based on the balance
-                if new_balance > self.initial_balance:
-                    # Reset the current step and phase to initial
-                    current_step = 0
-                    current_phase = 0
-                    self.initial_balance = new_balance
-                else:
-                    # Remain in the same phase but reset to initial step
-                    current_step = 0
+           
+            # adjust phases and steps
+            await self.adjust_phases_and_steps(response['trade_status'])
+            # adjust phases and steps
 
             await self.channel_layer.group_send(
                 self.room,
@@ -448,12 +450,12 @@ class Premium_Trade(threading.Thread):
                     'message': 'Trade completed',
                     'data': {
                         'result': response['trade_status'],  # trade_status will be either "profit" or "loss"
-                        "current_phase": current_phase + 1, # int
-                        "current_step": current_step, # int
+                        "current_phase": self.current_phase + 1, # int
+                        "current_step": self.current_step, # int
                         "lot_size": lot_size, # float
                         "stop_loss": stop_loss, # float
                         "take_profit": take_profit, # float
-                        "new_account_balance": new_balance # float
+                        "new_account_balance": mt5.account_info().balance # float
                     }
                 }
             )
@@ -686,8 +688,8 @@ class Premium_Trade(threading.Thread):
 #         }
 
 #         # Set the current phase and step to zero
-#         current_phase = 0
-#         current_step = 0
+#         self.current_phase = 0
+#         self.current_step = 0
 
 #         while True:
 #             if await self.check_open_positions():
@@ -713,7 +715,7 @@ class Premium_Trade(threading.Thread):
 #                 continue
 
 #             # Get the lot size, stop loss, and take profit for the current phase and step
-#             lot_size, stop_loss_pips, take_profit_pips = phases[current_phase + 1][current_step]
+#             lot_size, stop_loss_pips, take_profit_pips = phases[self.current_phase + 1][self.current_step]
 
 #             # Get the current price
 #             open_price = await self.get_price(self.symbol, signal_response['condition'])
@@ -774,25 +776,25 @@ class Premium_Trade(threading.Thread):
 #             if response['trade_status'] == "loss":
 #                 # print("A loss was made.")
 #                 # Update the current step or phase
-#                 if current_step < 3:
-#                     current_step += 1
+#                 if self.current_step < 3:
+#                     self.current_step += 1
 #                 else:
-#                     current_step = 0
-#                     if current_phase < 3:
-#                         current_phase += 1
+#                     self.current_step = 0
+#                     if self.current_phase < 3:
+#                         self.current_phase += 1
 #                     else:
-#                         current_phase = 0
+#                         self.current_phase = 0
 #             elif response['trade_status'] == "profit":
 #                 # print("A profit was made.")
 #                 # Determine the next step based on the balance
 #                 if new_balance > self.initial_balance:
 #                     # Reset the current step and phase to initial
-#                     current_step = 0
-#                     current_phase = 0
+#                     self.current_step = 0
+#                     self.current_phase = 0
 #                     self.initial_balance = new_balance
 #                 else:
 #                     # Remain in the same phase but reset to initial step
-#                     current_step = 0
+#                     self.current_step = 0
     
 #             await self.channel_layer.group_send(
 #                 self.room,
@@ -800,8 +802,8 @@ class Premium_Trade(threading.Thread):
 #                     'type': 'trade.finished',
 #                     'status': response['trade_status'],  # trade_status will be either "profit" or "loss"
 #                     'data': {
-#                         "current_phase": current_phase + 1, # int
-#                         "current_step": current_step, # int
+#                         "self.current_phase": self.current_phase + 1, # int
+#                         "self.current_step": self.current_step, # int
 #                         "lot size": lot_size, # float
 #                         "stop loss": stop_loss, # float
 #                         "take profit": take_profit, # float
