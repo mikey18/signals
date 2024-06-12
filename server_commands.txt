@@ -1,0 +1,14 @@
+daphne = web: daphne signals.asgi:application --port=$PORT --bind 0.0.0.0
+celery = celery -A signals.celery worker --pool=solo --loglevel=info
+
+celery not working = celery -A main worker --loglevel=info
+
+redis = redis-server
+
+List of all servers
+
+daphne
+redis
+celery
+
+
