@@ -803,6 +803,7 @@ class Premium_Trade:
                         'message': 'Trade completed',
                         'data': {
                             "result": await self.check_profit_or_loss(self.initial_balance),  # trade_status will be either "profit" or "loss"
+                            "trade_type": trade_data['trade_type'],
                             "current_phase": self.current_phase + 1, # int
                             "current_step": self.current_step, # int
                             "lot_size": trade_data['lot_size'], # float
@@ -918,6 +919,7 @@ class Premium_Trade:
                     'message': 'Trade completed',
                     'data': {
                         "result": response['trade_status'],  # trade_status will be either "profit" or "loss"
+                        "trade_type": signal_response['condition'],
                         "current_phase": self.current_phase + 1, # int
                         "current_step": self.current_step, # int
                         "lot_size": lot_size, # float
