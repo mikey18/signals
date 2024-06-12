@@ -269,11 +269,20 @@ class Premium_Trade(threading.Thread):
         current_step = 0
         
         trade_was_active = False
+        trade_data = None
         while True:
             if await self.check_open_positions():
                 trade_was_active = True
                 print('trade in progress 0')
                 last_position = await self.get_last_position()
+                trade_data = {
+                    "symbol": last_position.symbol,
+                    "trade_type": 'BUY' if last_position.type == 0 else 'SELL',
+                    "stop_loss": last_position.sl,
+                    "take_profit": last_position.tp,
+                    "open_price": last_position.price_open,
+                    "lot_size": last_position.volume
+                }
                 await self.channel_layer.group_send(
                     self.room,
                     {
@@ -281,11 +290,7 @@ class Premium_Trade(threading.Thread):
                         'status': True,
                         "message": "active trade in progress",
                         "data": {
-                            "symbol": last_position.symbol,
-                            "trade_type": 'BUY' if last_position.type == 0 else 'SELL',
-                            "stop_loss": last_position.sl,
-                            "take_profit": last_position.tp,
-                            "open_price": last_position.price_open,
+                            **trade_data,
                             "curent_price": last_position.price_current
                         }
                     }
@@ -295,7 +300,6 @@ class Premium_Trade(threading.Thread):
             
             # Checks if active trade was from signal server
             if trade_was_active:
-                last_position = await self.get_last_position()
                 await self.channel_layer.group_send(
                     self.room,
                     {
@@ -306,10 +310,10 @@ class Premium_Trade(threading.Thread):
                             'result': await self.check_profit_or_loss(self.initial_balance),  # trade_status will be either "profit" or "loss"
                             "current_phase": current_phase + 1, # int
                             "current_step": current_step, # int
-                            "lot_size": last_position.volume, # float
-                            "stop_loss": last_position.sl, # float
-                            "take_profit": last_position.tp, # float
-                            "new_account_balance": new_balance # float
+                            "lot_size": trade_data['lot_size'], # float
+                            "stop_loss": trade_data['stop_loss'], # float
+                            "take_profit": trade_data['take_profit'], # float
+                            "new_account_balance": mt5.account_info().balance # float
                         }
                     }
                 )
@@ -318,15 +322,16 @@ class Premium_Trade(threading.Thread):
                     print('saving to db')
                     Trade_History = apps.get_model('Generate_signals', 'Trade_History')
                     await database_sync_to_async(Trade_History.objects.create)(
-                        symbol=last_position.symbol,
-                        stop_loss=last_position.sl,
-                        take_profit=last_position.tp,
-                        price=last_position.price_open,
-                        type='BUY' if last_position.type == 0 else 'SELL',
+                        symbol=trade_data['symbol'],
+                        stop_loss=trade_data['stop_loss'],
+                        take_profit=trade_data['take_profit'],
+                        price=trade_data['open_price'],
+                        type=trade_data['trade_type'],
                         result=await self.check_profit_or_loss(self.initial_balance)
                     )
                     # Save trade to db
                     trade_was_active = False
+                    trade_data = None
             # Checks if active trade was from signal server
 
             # Call the signal API
@@ -419,7 +424,7 @@ class Premium_Trade(threading.Thread):
                 else:
                     # Remain in the same phase but reset to initial step
                     current_step = 0
-    
+
             await self.channel_layer.group_send(
                 self.room,
                 {
