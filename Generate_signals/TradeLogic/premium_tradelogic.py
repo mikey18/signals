@@ -354,13 +354,14 @@ class Premium_Trade(threading.Thread):
                 if last_position.comment.lower().startswith('signal'):
                     # Save trade to db
                     print('saving to db')
+                    trade_status = await self.check_profit_or_loss(self.initial_balance)
                     Trade_History = apps.get_model('Generate_signals', 'Trade_History')
                     await self.save_to_db(trade_data['symbol'], 
                                           trade_data['stop_loss'],
                                           trade_data['take_profit'],
                                           trade_data['open_price'],
                                           trade_data['trade_type'],
-                                          await self.check_profit_or_loss(self.initial_balance))
+                                          trade_status)
                     # Save trade to db
                     trade_was_active = False
                     trade_data = None
@@ -368,6 +369,11 @@ class Premium_Trade(threading.Thread):
                     parts = last_position.comment.lower().split(".")
                     self.current_phase = int(parts[1])
                     self.current_step = int(parts[2])
+
+                    # adjust phases and steps
+                    await self.adjust_phases_and_steps(trade_status)
+                    # adjust phases and steps
+
             # Checks if active trade was from signal server
             # Call the signal API
 
