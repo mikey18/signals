@@ -274,7 +274,6 @@ class Premium_Trade(threading.Thread):
                 trade_was_active = True
                 print('trade in progress 0')
                 last_position = await self.get_last_position()
-                print(trade_was_active)
                 await self.channel_layer.group_send(
                     self.room,
                     {
@@ -297,6 +296,23 @@ class Premium_Trade(threading.Thread):
             # Checks if active trade was from signal server
             if trade_was_active:
                 last_position = await self.get_last_position()
+                await self.channel_layer.group_send(
+                    self.room,
+                    {
+                        'type': 'trade.finished',
+                        'status': True,
+                        'message': 'Trade completed',
+                        'data': {
+                            'result': await self.check_profit_or_loss(self.initial_balance),  # trade_status will be either "profit" or "loss"
+                            "current_phase": current_phase + 1, # int
+                            "current_step": current_step, # int
+                            "lot_size": last_position.volume, # float
+                            "stop_loss": last_position.sl, # float
+                            "take_profit": last_position.tp, # float
+                            "new_account_balance": new_balance # float
+                        }
+                    }
+                )
                 if last_position.comment.lower().startswith('signal-server'):
                     # Save trade to db
                     print('saving to db')
@@ -364,17 +380,6 @@ class Premium_Trade(threading.Thread):
                     result=response['trade_status']
                 )
                 # Save trade to db
-
-                # await self.channel_layer.group_send(
-                #     self.room,
-                #     {
-                #         'type': 'trade.finished',
-                #         "status": True,
-                #         'message': "Trade placed",
-                #         'data': response
-                #     }
-                # )
-                # print("Trade request successful: ", response)
             else:
                 print("trade couldn't place")
                 await self.channel_layer.group_send(
@@ -387,10 +392,8 @@ class Premium_Trade(threading.Thread):
                 )
                 await asyncio.sleep(59)
                 continue
-              
             # Check the profit or loss from the trade result
-            # trade_status = response['trade_status']
-
+            
             # Get the new balance from the MT5 terminal
             new_balance = mt5.account_info().balance
 
@@ -424,7 +427,7 @@ class Premium_Trade(threading.Thread):
                     'status': True,
                     'message': 'Trade completed',
                     'data': {
-                        'status': response['trade_status'],  # trade_status will be either "profit" or "loss"
+                        'result': response['trade_status'],  # trade_status will be either "profit" or "loss"
                         "current_phase": current_phase + 1, # int
                         "current_step": current_step, # int
                         "lot_size": lot_size, # float
