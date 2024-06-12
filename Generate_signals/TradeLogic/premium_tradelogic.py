@@ -238,6 +238,17 @@ class Premium_Trade(threading.Thread):
             return last_position
         return False
     
+    async def save_to_db(self, symbol, stop_loss, take_profit, open_price, trade_type, initial_balance):
+        Trade_History = apps.get_model('Generate_signals', 'Trade_History')
+        await database_sync_to_async(Trade_History.objects.create)(
+            symbol=symbol,
+            stop_loss=stop_loss,
+            take_profit=take_profit,
+            price=open_price,
+            type=trade_type,
+            result=initial_balance
+        )
+
     async def money_management(self):
         self.symbol = 'XAUUSD'
         risk = 0.01 
@@ -269,10 +280,10 @@ class Premium_Trade(threading.Thread):
         current_step = 0
         
         trade_was_active = False
-        trade_data = None
         while True:
             if await self.check_open_positions():
                 trade_was_active = True
+                trade_data = None
                 print('trade in progress 0')
                 last_position = await self.get_last_position()
                 trade_data = {
@@ -321,14 +332,12 @@ class Premium_Trade(threading.Thread):
                     # Save trade to db
                     print('saving to db')
                     Trade_History = apps.get_model('Generate_signals', 'Trade_History')
-                    await database_sync_to_async(Trade_History.objects.create)(
-                        symbol=trade_data['symbol'],
-                        stop_loss=trade_data['stop_loss'],
-                        take_profit=trade_data['take_profit'],
-                        price=trade_data['open_price'],
-                        type=trade_data['trade_type'],
-                        result=await self.check_profit_or_loss(self.initial_balance)
-                    )
+                    await self.save_to_db(trade_data['symbol'], 
+                                          trade_data['stop_loss'],
+                                          trade_data['take_profit'],
+                                          trade_data['open_price'],
+                                          trade_data['trade_type'],
+                                          await self.check_profit_or_loss(self.initial_balance))
                     # Save trade to db
                     trade_was_active = False
                     trade_data = None
@@ -384,6 +393,12 @@ class Premium_Trade(threading.Thread):
                     type=signal_response['condition'],
                     result=response['trade_status']
                 )
+                await self.save_to_db(self.symbol, 
+                                        stop_loss,
+                                        take_profit,
+                                        price,
+                                        signal_response['condition'],
+                                        response['trade_status'])
                 # Save trade to db
             else:
                 print("trade couldn't place")
