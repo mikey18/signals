@@ -307,8 +307,6 @@ class Premium_Trade(threading.Thread):
                 trade_data = None
                 print('trade in progress 0')
                 last_position = await self.get_last_position()
-                print(last_position)
-
                 trade_data = {
                     "symbol": last_position.symbol,
                     "trade_type": 'BUY' if last_position.type == 0 else 'SELL',
@@ -341,7 +339,7 @@ class Premium_Trade(threading.Thread):
                         'status': True,
                         'message': 'Trade completed',
                         'data': {
-                            'result': await self.check_profit_or_loss(self.initial_balance),  # trade_status will be either "profit" or "loss"
+                            "result": await self.check_profit_or_loss(self.initial_balance),  # trade_status will be either "profit" or "loss"
                             "current_phase": self.current_phase + 1, # int
                             "current_step": self.current_step, # int
                             "lot_size": trade_data['lot_size'], # float
@@ -378,6 +376,7 @@ class Premium_Trade(threading.Thread):
             # Call the signal API
 
             signal_response = await self.get_buy_or_sell_signal()
+            # signal_response = {"status": True, "condition":"BUY"}
 
             # If the signal is not 'buy' or 'sell', skip this iteration
             if signal_response['status'] is False:
@@ -455,7 +454,7 @@ class Premium_Trade(threading.Thread):
                     'status': True,
                     'message': 'Trade completed',
                     'data': {
-                        'result': response['trade_status'],  # trade_status will be either "profit" or "loss"
+                        "result": response['trade_status'],  # trade_status will be either "profit" or "loss"
                         "current_phase": self.current_phase + 1, # int
                         "current_step": self.current_step, # int
                         "lot_size": lot_size, # float
@@ -466,7 +465,6 @@ class Premium_Trade(threading.Thread):
                 }
             )
             await asyncio.sleep(59)
-
 
     async def initiate_system(self):
         await self.money_management()
