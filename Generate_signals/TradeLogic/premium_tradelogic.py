@@ -738,7 +738,7 @@ class Premium_Trade:
 
     async def money_management(self):
         self.symbol = 'XAUUSD'
-        risk = 0.01 
+        risk = 0.001 
         stop_loss_pips = 250  
         # Get the initial balance
         self.initial_balance = mt5.account_info().balance
