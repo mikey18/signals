@@ -9,7 +9,7 @@ from .serializers import Trade_HistorySerializer
 class Seller_OrderHistoryAPI(APIView):
     def get(self, request):
         try:
-            orders = Trade_History.objects.all().order_by('-created_at')[:7]
+            orders = Trade_History.objects.all().order_by('-created_at')[:20]
             serializer = Trade_HistorySerializer(orders, many=True)
             return Response({
                 'status': 200,
