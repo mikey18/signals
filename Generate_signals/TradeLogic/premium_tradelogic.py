@@ -672,20 +672,20 @@ class Premium_Trade:
     async def convert_pips_to_price(self, price, pips, point):
         return price + (pips * point)
     
-    async def has_more_than_two_decimal_places(self, value):
-        # Convert the value to a string to check the number of decimal places
-        str_value = str(value)
-        
-        # Check if the value has a decimal point
-        if '.' in str_value:
-            # Split the string into the integer and decimal parts
-            parts = str_value.split('.')
-            # Check if the decimal part has more than two digits
-            return len(parts[1]) > 2
-        return False
-
     async def convert_to_two_decimal_places(self, value):
-        if await self.has_more_than_two_decimal_places(value):
+        async def has_more_than_two_decimal_places(value):
+            # Convert the value to a string to check the number of decimal places
+            str_value = str(value)
+            
+            # Check if the value has a decimal point
+            if '.' in str_value:
+                # Split the string into the integer and decimal parts
+                parts = str_value.split('.')
+                # Check if the decimal part has more than two digits
+                return len(parts[1]) > 2
+            return False
+        
+        if await has_more_than_two_decimal_places(value):
             # Use round() to round the value to two decimal places
             value = round(value, 2)
         return value
