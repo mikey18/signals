@@ -749,7 +749,10 @@ class Premium_Trade:
             initial_lot_size = round((money_to_risk / stop_loss_pips), 1)
         elif type(money_to_risk) is float:
             calculation = money_to_risk / stop_loss_pips
-            initial_lot_size = await self.convert_to_two_decimal_places(calculation)
+            if calculation < 0.01:
+                initial_lot_size = 0.01
+            else:
+                initial_lot_size = await self.convert_to_two_decimal_places(calculation)
 
         # Define the phases and steps
         phases = {
