@@ -639,7 +639,7 @@ class Premium_Trade:
         price=data['price']
 
         result = await self.place_trade(symbol, volume, sl, tp, condition, price)
-
+        print(result)
         if result.retcode != mt5.TRADE_RETCODE_DONE:
             return {'status': 'error', 'retcode': result.retcode, 'comment': result.comment}
         else:
@@ -753,6 +753,8 @@ class Premium_Trade:
                 initial_lot_size = 0.01
             else:
                 initial_lot_size = await self.convert_to_two_decimal_places(calculation)
+
+        print(initial_lot_size)
 
         # Define the phases and steps
         phases = {
