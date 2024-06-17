@@ -883,15 +883,6 @@ class Premium_Trade:
             if response['status'] == 'success':
                 # Save trade to db
                 print('saving to db')
-                Trade_History = apps.get_model('Generate_signals', 'Trade_History')
-                await database_sync_to_async(Trade_History.objects.create)(
-                    symbol=self.symbol,
-                    stop_loss=stop_loss,
-                    take_profit=take_profit,
-                    price=price,
-                    type=signal_response['condition'],
-                    result=response['trade_status']
-                )
                 await self.save_to_db(self.symbol, 
                                         stop_loss,
                                         take_profit,
