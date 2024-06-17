@@ -822,7 +822,6 @@ class Premium_Trade:
                     # Save trade to db
                     print('saving to db')
                     trade_status = await self.check_profit_or_loss(self.initial_balance)
-                    Trade_History = apps.get_model('Generate_signals', 'Trade_History')
                     await self.save_to_db(trade_data['symbol'], 
                                           trade_data['stop_loss'],
                                           trade_data['take_profit'],
