@@ -465,6 +465,5 @@ class Premium_Trade:
                 await asyncio.sleep(59)
                 continue
            
-        
     def initiate_system(self):
         asyncio.run(self.money_management())

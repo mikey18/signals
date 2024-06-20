@@ -18,8 +18,8 @@ def start_mt5():
     else:
         # print("MT5 initialized successfully")
         logger.info(f"MT5 initialized successfully")
-        account = 5026645666
-        password = '!uJ1NuJt'
+        account = 10003376634
+        password = '3t+xAuQi'
         server = 'MetaQuotes-Demo'
         login = mt5.login(login=account, password=password, server=server)
 
